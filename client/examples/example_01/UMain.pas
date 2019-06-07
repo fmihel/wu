@@ -104,9 +104,11 @@ begin
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
+var w:TwindecoUpdate;
 begin
-
     OpenDialog1.InitialDir:=ExtractFilePath(Application.ExeName);
+    w:=TWindecoUpdate.Create;
+    w.Free;
 end;
 
 procedure TfrmMain.log(aMsg: string);

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * данный модуль выполняет скрипты после обновления.
  * Выполнение идет пошагово. 
@@ -9,18 +10,8 @@
  * 
  */
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL & ~E_NOTICE);
     
- if(!isset($Application)){
-    require_once '../../../../wsi/ide/ws/utils/application.php';
-    
-    $Application->LOG_ENABLE        = true;
-    $Application->LOG_TO_ERROR_LOG  = false; 
-    
-};
-
+ 
 require_once 'common.php';
 
 require_once 'createTree.php';

@@ -189,6 +189,7 @@ type
         fScriptList: string;
         fScriptUnpack: string;
         fScriptUpdate: string;
+        fSetupFileName: string;
         fTables: TStringList;
         fTmpFolder: string;
         fUpdateResult: TWindecoUpdateResult;
@@ -207,12 +208,14 @@ type
         function AfterUpdate: TWindecoUpdateResult;
         function Clear: TWindecoUpdateResult;
         function LoadExistsFiles(aFiles: TStrings): TWindecoUpdateResult;
+        function LoadSetup: Boolean;
         {:
         —оздание списка таблиц
         ѕолучение кол-ва строк обновлений в каждой таблице
         }
         function Prepare: TWindecoUpdateResult;
         function Run: TWindecoUpdateResult;
+        function SaveSetup: Boolean;
         function Unpack: TWindecoUpdateResult;
         function Update: TWindecoUpdateResult;
         function Upload: TWindecoUpdateResult;
@@ -234,6 +237,7 @@ type
         property ScriptList: string read fScriptList write fScriptList;
         property ScriptUnpack: string read fScriptUnpack write fScriptUnpack;
         property ScriptUpdate: string read fScriptUpdate write fScriptUpdate;
+        property SetupFileName: string read fSetupFileName write fSetupFileName;
         property Tables: TStringList read fTables write fTables;
         property TmpFolder: string read fTmpFolder write fTmpFolder;
         property ZipFileName: string read fZipFileName write fZipFileName;
@@ -528,6 +532,9 @@ end;
 constructor TWindecoUpdate.Create;
 begin
     inherited Create;
+        fSetupFileName:=ExtractFilePath(Application.ExeName)+'/setup.ini';
+
+      LoadSetup();
       fCountPacksAtTime:=100;
       fTables:=TStringList.Create();
       fTmpFolder:=WINDECO_UTILS.TMP_FOLDER();
@@ -546,10 +553,12 @@ end;
 
 destructor TWindecoUpdate.Destroy;
 begin
+     SaveSetup();
      self.tabClear();
      self.fTables.Free();
      self.fFiles.Free();
      self.fErrors.Free();
+
     inherited Destroy;
 end;
 
@@ -653,6 +662,59 @@ begin
     finally
 
     end;
+end;
+
+function TWindecoUpdate.LoadSetup: Boolean;
+var
+    ini: TStringList;
+
+    function getStr(aName:string;aDefault:string):string;
+    begin
+        if (ini<>nil) and (ini.IndexOfName(aName)>-1) then begin
+            result:=ini.Values[aName];
+        end else
+            result:=aDefault;
+    end;
+
+begin
+    result:=false;
+
+    if (FileExists(SetupFileName)) then
+        ini:=TStringList.Create()
+    else
+        ini:=nil;
+
+    try
+    try
+        if (ini<>nil) then
+            ini.LoadFromFile(SetupFileName);
+
+        fCountPacksAtTime:=StrToInt(getStr('CountPacksAtTime','100'));
+
+        fFtpHost:=getStr('FtpHost','');
+        fFtpUsername:=getStr('FtpUserName','');
+        fFtpPassword:=getStr('FtpPassword','');
+        fKey :=getStr('Key','test');
+        fScriptUpdate :=getStr('ScriptUpdate','https://windeco.su/admin/modules/update/remote/update.php');
+        fScriptUnpack :=getStr('ScriptUnpack','https://windeco.su/admin/modules/update/remote/unpack.php');
+        fScriptEnd    :=getStr('ScriptEnd','https://windeco.su/admin/modules/update/remote/clear.php');
+        fScriptList   :=getStr('ScriptList','https://windeco.su/admin/modules/update/remote/list.php');
+        fAfterUpdateScript   :=getStr('AfterUpdateScript','https://windeco.su/admin/modules/update/remote/after_update.php');
+
+        result:=true;
+    except
+    on e:Exception do
+    begin
+
+    end;
+    end;
+    finally
+        if (ini<>nil) then
+            ini.Free();
+    end;
+
+
+
 end;
 
 function TWindecoUpdate.Prepare: TWindecoUpdateResult;
@@ -779,6 +841,39 @@ begin
     end;
 end;
 
+function TWindecoUpdate.SaveSetup: Boolean;
+var
+    ini: TStringList;
+begin
+    result:=false;
+    ini:=TStringList.Create();
+    try
+    try
+
+        ini.Values['CountPacksAtTime']  :=  IntToStr(fCountPacksAtTime);
+        ini.Values['FtpHost']           :=  FtpHost;
+        ini.Values['FtpUsername']       :=  FtpUserName;
+        ini.Values['FtpPassword']       :=  FtpPassword;
+        ini.Values['Key']               :=  fKey;
+        ini.Values['ScriptUpdate']      :=  fScriptUpdate;
+        ini.Values['ScriptUnpack']      :=  fScriptUnpack;
+        ini.Values['ScriptEnd']         :=  fScriptEnd;
+        ini.Values['ScriptList']        :=  fScriptList;
+        ini.Values['AfterUpdateScript'] :=  fAfterUpdateScript;
+        ini.SaveToFile(SetupFileName);
+        result:=true;
+    except
+    on e:Exception do
+    begin
+
+    end;
+    end;
+    finally
+        ini.Free();
+
+    end;
+
+end;
 function TWindecoUpdate.tabAdd(aTable: string): TWindecoTable;
 var
     item: TWindecoTable;

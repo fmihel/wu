@@ -18,14 +18,17 @@ define('RESULT_FILE_NOT_EXIST','<result>3</result>');
 define('RESULT_BASE_REG','<result>4</result>');
 
 
-define('HTTP_MEDIA','http://windeco.su/media/');
+// define('HTTP_MEDIA','http://windeco.su/media/');
+define('HTTP_MEDIA',WS_CONF::GET('HTTP_MEDIA'));
 // путь к папке с обновлениями
-define('UPDATE_ZIP_PATH','../../../../source/update/');
+// define('UPDATE_ZIP_PATH','../../../../source/update/');
+define('UPDATE_ZIP_PATH',WS_CONF::GET('UPDATE_ZIP_PATH'));
 // путь куда распаковывается обновление
-define('UNPACK_ZIP_PATH','../tmp/');
+// define('UNPACK_ZIP_PATH','../tmp/');
+define('UNPACK_ZIP_PATH',WS_CONF::GET('UNPACK_ZIP_PATH'));
 // путь куда сохраняются файлы созданные из блоб
-//define('BIN_STORY_PATH','../bin_tmp/');
-define('BIN_STORY_PATH','../../../../media/');
+//define('BIN_STORY_PATH','../../../../media/');
+define('BIN_STORY_PATH',WS_CONF::GET('BIN_STORY_PATH'));
 
 _LOG($Application->REQUEST,__FILE__,__LINE__);
 
