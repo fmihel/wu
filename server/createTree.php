@@ -336,7 +336,8 @@ class CREATE_TREE_UTILS {
                 $node['icon']       =   $ICONS[$row['ICON_IND']];
                 $node['SRCE_KIND']    =   $row['SRCE_KIND'];
                 
-                $node['media'] = self::_get_media($ID,$kind['media_kind']);
+                
+                $node['media'] = self::_get_media($ID,COMMON::get($kind,'media_kind',''));
                 
                 
                 if ($row['SRCE_KIND']==0){

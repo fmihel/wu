@@ -5,7 +5,7 @@
  * 
  * @param {string} file - имя распаковываемого файла
  */ 
-require_once 'consts.php';
+require_once 'init.php';
 
 
 /*------------------------------------------*/
@@ -28,11 +28,12 @@ if (!file_exists($file)){
 /*------------------------------------------*/
 // регистрируем в таблице обновлений
 
-$q = "insert into UPDATE_LIST (CFILENAME,CDATE,CSTATE) value ('".$_REQUEST['file']."',CURRENT_TIMESTAMP,1)";
+$q = "insert into UPDATE_LIST (CFILENAME,CDATE,CSTATE,CCOMMENT) value ('".$_REQUEST['file']."',CURRENT_TIMESTAMP,1,'')";
 
-if (!base::query($q,'deco')){
-    _LOG("Error [$q]",__FILE__,__LINE__);
+if (!\base::query($q,'deco')){
+    _LOG(\base::error('deco')."[$q]",__FILE__,__LINE__);
     echo RESULT_BASE_REG;
+    exit;
 } 
 
 /*------------------------------------------*/

@@ -10,7 +10,7 @@
 */
 
 
-require_once 'common.php';
+require_once 'init.php';
 require_once 'update_utils.php';
 
 

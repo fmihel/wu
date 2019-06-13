@@ -3,10 +3,10 @@
  * мооудль очистки, по окончании процесса обновления
  * 
  */ 
-require_once 'consts.php';
+require_once 'init.php';
 
 
-DIR::clear(UNPACK_ZIP_PATH);
+DIR::clear(WS_CONF::GET('UNPACK_ZIP_PATH'));
 
 
 echo RESULT_OK;

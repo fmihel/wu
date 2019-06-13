@@ -6,7 +6,7 @@
      */ 
     
     
-    require_once 'consts.php';  
+    require_once 'init.php';  
     
     $q = 'select  distinct CFILENAME from UPDATE_LIST order by ID desc';
     $ds = base::ds($q,'deco');

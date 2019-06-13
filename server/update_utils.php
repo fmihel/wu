@@ -109,7 +109,7 @@ class Bdr{
         
         return $out;
     }
-}
+};
 
 class UPDATE_UTILS  {
     /** возвращает список файлов */
@@ -207,6 +207,7 @@ class UPDATE_UTILS  {
 
     /** возвращает информацию о содержимом архива обновления */
     public static function info($file){
+        global $Application;
         $out = array('res'=>0);
         
         if (!self::unpack($file)){
@@ -297,15 +298,16 @@ class UPDATE_UTILS  {
         return $out;
     }
 
-    private static function mean_by_type($mean,$type){
+    public static function mean_by_type($mean,$type){
         if ($type === 'STRING'){
             //$mean = mb_convert_encoding($mean,'CP1251','ASCII');
             $mean = str_replace('[<CR>]',chr(13).chr(10),$mean);
-            return "'".mysql_escape_string($mean)."'";
+            $out = \base::real_escape($mean,'deco');
+            return "'$out'";
         }
-
+        
         if ($type === 'BIN.HEX')
-            return '"'.mysql_escape_string(UPDATE_UTILS::decode_bin($mean)).'"';
+            return '"'.(\base::real_escape(UPDATE_UTILS::decode_bin($mean),'deco')).'"';
 
         if ($type === 'BIN')
             return UPDATE_UTILS::decode_bin($mean);
@@ -328,7 +330,6 @@ class UPDATE_UTILS  {
         $res = 1;
         $msg= '';
         //----------------------------------------------------------------------
-        global $base;
         global $TABLE_INDEX;
         global $DELETED_TABLES;
         
@@ -592,14 +593,12 @@ class UPDATE_UTILS  {
     
     public static function media($index,$count_recs=1){
         $res = 1;
-        $msg= '';
         //----------------------------------------------------------------------
-        global $base;
         global $TABLE_INDEX;
         $TABLE = 'C_MEDIA_FILE';
         $FILENAME = 'PATH_WWW';
         $INDEX_NAME = $TABLE_INDEX[$TABLE];
-        $FIELDS_WEB = base::fieldsInfo($TABLE,true,'deco');
+        $FIELDS_WEB = \base::fieldsInfo($TABLE,true,'deco');
         
         //----------------------------------------------------------------------
         $bdr = new Bdr($TABLE.'.bdr');
@@ -680,7 +679,7 @@ class UPDATE_UTILS  {
             // -----------------------------------------------------------------------------------
             
             if (!base::query($q,'deco')){
-                _LOG('Error['.$q.']',__FILE__,__LINE__);                
+                _LOG(base::error('deco').' ['.$q.']',__FILE__,__LINE__);                
                 $res = 0;
             }else{
                 if (!$file){
@@ -726,7 +725,7 @@ class UPDATE_UTILS  {
         return false;
     }
     
-}
+};
 
 
 ?>

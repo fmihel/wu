@@ -12,11 +12,11 @@
 
     
  
-require_once 'common.php';
+require_once 'init.php';
 
 require_once 'createTree.php';
 require_once 'createTreeFull.php';
-require_once 'archAll_utils.php';
+require_once 'arch.php';
 
 $out = array('res'=>0);
 // кол-во шагов
@@ -29,14 +29,14 @@ if (isset($_REQUEST['count'])){
     exit;
 };
 
-if (!$connect_to_test_base){
-    echo RESULT_OK;
-    exit;
-}    
+//if (!$connect_to_test_base){
+//    echo RESULT_OK;
+//    exit;
+//}    
 
     
 
-$catalogJsPath = __DIR__.'/../../createTree';
+$catalogJsPath = __DIR__.WS_CONF::GET('catalogJsPath');
 
 if (isset($_REQUEST['step'])){
     $step = intval($_REQUEST['step']);
@@ -47,7 +47,7 @@ if (isset($_REQUEST['step'])){
             $out = CREATE_TREE_UTILS::SAVE_ALL($catalogJsPath);
             break;
         case 1:
-            $file = 'catalog_last_update_date.php';
+            $file = $catalogJsPath.'/catalog_last_update_date.php';
 
             file_put_contents($file,
 '<?php 
@@ -60,12 +60,18 @@ if (isset($_REQUEST['step'])){
             break;
         case 2:
 
-            archAll::$path = '../../archAll/tmp/';
-            archAll::$catalogPath = '../../createTree/catalog.js';
-            archAll::$mediaPath = '../../../../';  
-            archAll::$mediaHttp = 'http://windeco.su/';  
-            archAll::$zipPath = '../../../../download/catalog.zip';  
-            archAll::create();
+            //archAll::$path = '../../archAll/tmp/';
+            //archAll::$catalogPath = '../../createTree/catalog.js';
+            //archAll::$mediaPath = '../../../../';  
+            //archAll::$mediaHttp = 'http://windeco.su/';  
+            //archAll::$zipPath = '../../../../download/catalog.zip';  
+            arch::$path          = WS_CONF::GET('arch_path');
+            arch::$catalogPath   = WS_CONF::GET('arch_catalogPath');
+            arch::$mediaPath     = WS_CONF::GET('arch_mediaPath');  
+            arch::$mediaHttp     = WS_CONF::GET('arch_mediaHttp');  
+            arch::$zipPath       = WS_CONF::GET('arch_zipPath');  
+
+            arch::create();
             
             
             $out['res'] = 1;

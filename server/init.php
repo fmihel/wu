@@ -1,7 +1,7 @@
 <?php
 
 if(!isset($Application)){
-    require_once '../../../../wsi/ide/ws/utils/application.php';
+    require_once '../../wsi/ide/ws/utils/application.php';
     
     $Application->LOG_ENABLE        = true;
     $Application->LOG_TO_ERROR_LOG  = false; 
@@ -43,8 +43,8 @@ if ((!isset($_REQUEST['key']))||($_REQUEST['key'] !== WS_CONF::GET('key') )){
 require_once UNIT('utils','dir.php');
 require_once UNIT('utils','common.php');
 
-require_once 'connect.php';
-require_once 'update_consts.php';
+require_once './connect.php';
+require_once './update_consts.php';
 
 
 

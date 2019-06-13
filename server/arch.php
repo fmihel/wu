@@ -11,7 +11,7 @@ if(!isset($Application)){
 */
 require_once UNIT('utils','dir.php');
 
-class archAll{
+class arch{
     /** Относительный путь к временной папке, куда будет создаваться структура каталога */ 
     static $path ;
     /** Относительный путь к файлу каталога catalog.js */ 
@@ -22,7 +22,6 @@ class archAll{
     static $mediaHttp;
     /** каталог внутри $path куда будут помещена стркутура */
     static $catalog = '/catalog';
-    
     /** Относительный путь к файлу, куда будет помещен архив (по умолчанию $path.$catalog.'.zip' )*/
     static $zipPath='';
     
@@ -40,7 +39,7 @@ class archAll{
     
     static function debug_info($cr='<br>'){
         $space = '&nbsp;&nbsp;&nbsp;&nbsp;';
-        $res= 'archAll{'.$cr;
+        $res= 'arch{'.$cr;
         $res.= $space.'path = ['.self::$path.']'.$cr;
         $res.= $space.'catalogPath = ['.self::$catalogPath.']'.$cr;
         $res.= $space.'mediaPath = ['.self::$mediaPath.']'.$cr;
@@ -98,7 +97,7 @@ class archAll{
         for($i = 0;$i<count($catalog);$i++){
             $item = $catalog[$i];
             
-            $child = $item['child'];
+            $child = COMMON::get($item,'child',null);
             $name = self::preTrans($item['caption']);
             $name = self::trans($name);
             $download =  ((isset($item['media']))&&(isset($item['media']['download']))&&(gettype($item['media']['download'])==='array'))?$item['media']['download']:array();
@@ -157,16 +156,13 @@ class archAll{
     
     /** архивирование */
     static function zip(){
-        global $Application;
         $file = (self::$zipPath===''?APP::slash(self::$path,false,true).APP::slash(self::$catalog,false,false).'.zip':self::$zipPath);
-        //$file = APP::abs_path($Application->PATH,$file);
         
-        $catalogPath = APP::slash(self::$path,false,true).APP::slash($catalog,false,true);
+        $catalogPath = APP::slash(self::$path,false,true);
         $files = DIR::files($catalogPath,'xls,xlsx',false,false);
         
         $zip = new ZipArchive;
         if ($zip->open($file,ZipArchive::CREATE)){
-            
             for($i=0;$i<count($files);$i++){
                 $from = $files[$i];
                 $to = str_replace(self::$path,'',$from);

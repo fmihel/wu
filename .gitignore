@@ -11,6 +11,7 @@
 /server/ws_conf.json
 /server/ws_conf.php
 /server/node_modules/
+/server/test/
 .vscode/
 
 *.exe

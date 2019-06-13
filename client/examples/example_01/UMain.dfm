@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 2720
-  Top = 420
+  Left = 800
+  Top = 405
   BorderStyle = bsDialog
   Caption = 'example Windeco Update'
   ClientHeight = 489
@@ -40,7 +40,7 @@ object frmMain: TfrmMain
     Height = 24
     ReadOnly = True
     TabOrder = 0
-    Text = '..\media\update.zip'
+    Text = 'E:\work\windeco\wu\client\release\DecoR_04062019_05062019_K.zip'
   end
   object mmLog: TMemo
     Left = 24

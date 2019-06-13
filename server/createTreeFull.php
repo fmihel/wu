@@ -111,7 +111,8 @@ class CREATE_FULL_TREE_UTILS {
                 //$node['ICON_IND']   =   $row['ICON_IND'];
                 $node['icon']       =   $ICONS[$row['ICON_IND']];
                 
-                $node['media'] = self::_get_media($ID,$kind['media_kind']);
+                
+                $node['media'] = self::_get_media($ID,COMMON::get($kind,'media_kind',''));
                 
                 if (($row['SRCE_KIND']==1)||($row['SRCE_KIND']==2)||($row['SRCE_KIND']==6)||($row['SRCE_KIND']==7)){
                     $node['IS_CHAPTER']          =   ($kind['is_chapter']?1:0);
