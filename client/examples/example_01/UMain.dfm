@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 800
-  Top = 405
+  Left = 2720
+  Top = 420
   BorderStyle = bsDialog
   Caption = 'example Windeco Update'
   ClientHeight = 489

@@ -36,8 +36,8 @@ end;
 |ScriptList|адрес скритпа списка файлов|http://windeco/wu/server/list.php|
 |AfterUpdateScript|адрес скрипта запускаемого в конце процесса|http://windeco/wu/server/after_update.php|
 |CountPacksAtTime|Кол-строк обновляемых за раз|100|
-|Key|ключ автризации|test|
+|Key|ключ автризации|xxxxxx|
 |FtpHost|ftp host|u4673.ftp.masterhost.ru|
-|FtpUsername|ftp user name|userName|
-|FtpPassword|ftp password|wjdkjw|
+|FtpUsername|ftp user name|xxxxxx|
+|FtpPassword|ftp password|xxxxxx|
 
