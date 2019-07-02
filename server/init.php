@@ -1,7 +1,11 @@
 <?php
 
 if(!isset($Application)){
-    require_once '../../wsi/ide/ws/utils/application.php';
+    $file = '../../wsi/ide/ws/utils/application.php';
+    if (file_exists($file))
+        require_once $file;
+    else
+        require_once '../'.$file;
     
     $Application->LOG_ENABLE        = true;
     $Application->LOG_TO_ERROR_LOG  = false; 
@@ -30,7 +34,9 @@ define('UNPACK_ZIP_PATH',WS_CONF::GET('UNPACK_ZIP_PATH'));
 //define('BIN_STORY_PATH','../../../../media/');
 define('BIN_STORY_PATH',WS_CONF::GET('BIN_STORY_PATH'));
 
-_LOG($Application->REQUEST,__FILE__,__LINE__);
+
+_LOGF($Application->REQUEST,'$Application->REQUEST',__FILE__,__LINE__);
+    
 
 if ((!isset($_REQUEST['key']))||($_REQUEST['key'] !== WS_CONF::GET('key') )){
     
