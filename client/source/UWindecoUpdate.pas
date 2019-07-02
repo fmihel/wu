@@ -532,7 +532,7 @@ end;
 constructor TWindecoUpdate.Create;
 begin
     inherited Create;
-        fSetupFileName:=ExtractFilePath(Application.ExeName)+'/setup.ini';
+        fSetupFileName:=ExtractFilePath(Application.ExeName)+'/windeco_update.ini';
 
       LoadSetup();
       fCountPacksAtTime:=100;
