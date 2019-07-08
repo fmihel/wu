@@ -209,13 +209,15 @@ class UPDATE_UTILS  {
     public static function info($file){
         global $Application;
         $out = array('res'=>0);
-        
+        _LOGF('in','in',__FILE__,__LINE__);
+    
         if (!self::unpack($file)){
             _LOG("Error unpack [$file]",__FILE__,__LINE__);
             return $out;
         }
         
-        $_files = DIR::files($Application->PATH.UNPACK_ZIP_PATH,'bdr');
+        $_files = DIR::files(UNPACK_ZIP_PATH,'bdr');
+
         $tables = array();
         for($i=0;$i<count($_files);$i++){
             $bdr = $_files[$i];
