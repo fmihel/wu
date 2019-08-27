@@ -4,9 +4,9 @@
  * данный модуль выполняет скрипты после обновления.
  * Выполнение идет пошагово. 
  * В начале нужно запросить кол-во шагов
- * http://windeco.su/admin/modules/update/remote/after_update.php?key=wjhedwkje&count
+ * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&count
  * Выполнение шага:
- * http://windeco.su/admin/modules/update/remote/after_update.php?key=wjhedwkje&step=NNN
+ * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&step=NNN
  * 
  */
 
@@ -14,13 +14,15 @@
  
 require_once 'init.php';
 
+    
 require_once 'createTree.php';
 require_once 'createTreeFull.php';
+require_once 'tree_generate.php';
 require_once 'arch.php';
 
 $out = array('res'=>0);
 // кол-во шагов
-$COUNT_STEPS = 4;
+$COUNT_STEPS = 5;
 
     
 
@@ -29,12 +31,7 @@ if (isset($_REQUEST['count'])){
     exit;
 };
 
-//if (!$connect_to_test_base){
-//    echo RESULT_OK;
-//    exit;
-//}    
 
-    
 
 $catalogJsPath = __DIR__.WS_CONF::GET('catalogJsPath');
 
@@ -52,7 +49,7 @@ if (isset($_REQUEST['step'])){
             file_put_contents($file,
 '<?php 
     /*данный файл генерируется автоматически, из скрипта after_update.php*/
-    define("CATALOG_LAST_UPDATE_DATE","'.date('d/m/Y h:i').'");
+    define("CATALOG_LAST_UPDATE_DATE","'.date('d/m/Y H:i').'");
     define("CATALOG_JS_CACHE","'.md5(file_get_contents($catalogJsPath.'/catalog.js')).'");
 ?>'
             );
@@ -81,6 +78,14 @@ if (isset($_REQUEST['step'])){
             $q = 'truncate table BUFFER';
             if (base::query($q,'deco'))
                 $out['res'] = 1;
+            break;
+        case 4:
+
+            try{
+                TREE_GENERATE::create($catalogJsPath.'/catalog_new.js');
+            }catch(Exception $e){
+            }
+            $out['res'] = 1;
             break;
     }
     
