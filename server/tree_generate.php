@@ -73,10 +73,12 @@ $ICONS = array(
 
 );
 
+$RUS_BUK = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я'];
+$ENG_BUK = ['a','b','v','g','d','e','e','g','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','c','s','s','' ,'' ,'' ,'e','u','y'];
+
 class TREE_GENERATE{
     private static $coding = 'utf8';
-    
-    
+
     public static function create($saveToFile = false){
         try{
             $out = [];
@@ -86,9 +88,8 @@ class TREE_GENERATE{
             
             $row = [];
             while(base::by($ds,$row)){
-                $out[] = self::_create($row);
+                $out[] = self::_create($row,'');
             }
-        
         
             $out[]=[
                 'caption'=>'Личный кабинет',
@@ -97,10 +98,9 @@ class TREE_GENERATE{
                 'id'=>'main_page',
                 'viewAs'=>'mainPage',
                 'subset'=>[0],
+                'hash'=>'main'
             
             ];  
-            
-        
             
             if ($saveToFile){
             
@@ -117,7 +117,7 @@ class TREE_GENERATE{
         
     }
     
-    private static function _create($node){
+    private static function _create($node,$parent){
         global $SRCE_KIND;
         global $ICONS;
         
@@ -135,7 +135,8 @@ class TREE_GENERATE{
         $out['caption']    =   self::stringCorrect($node['CAPTION']);
         $out['icon']       =   $ICONS[$node['ICON_IND']];
         $out['SRCE_KIND']  =   $node['SRCE_KIND'];
-                
+        
+        $out['hash']       =   self::translit($parent,$node);
                 
         $out['media'] = self::_get_media($ID,COMMON::get($kind,'media_kind',''));
         //-------------------------------------------------------------------------------------------------------
@@ -153,7 +154,7 @@ class TREE_GENERATE{
         $ds = base::dsE($q,'deco',self::$coding);
         $row = [];
         while(base::by($ds,$row)){
-            $child[]=self::_create($row);
+            $child[]=self::_create($row,$out['hash']);
         }
         
         if ($node['SRCE_KIND']==0){
@@ -364,6 +365,21 @@ class TREE_GENERATE{
         return base::valueE($q,'ID_K_TOVAR','-1','deco',self::$coding);
         
 
+    }
+    
+    private static function translit($pref,$node){
+        global $RUS_BUK;
+        global $ENG_BUK;
+
+        $out = trim(mb_strtolower($node['CAPTION']));
+        while(strpos($out,'  ')!==false)
+            $out = str_replace(['  '],[' '],$out);
+
+        $out = str_replace([' '],['_'],$out);
+        $out = preg_replace('/[^a-zA-Zа-яА-Я0-9\_]/ui', '',$out);
+        $out = str_replace($RUS_BUK,$ENG_BUK,$out);
+        
+        return $pref.($pref!==''?"/":"").$out;
     }
 }
 ?>
