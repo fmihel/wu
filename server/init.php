@@ -9,7 +9,7 @@ if(!isset($Application)){
     
     $Application->LOG_ENABLE        = true;
     $Application->LOG_TO_ERROR_LOG  = false; 
-    $Application->LOG_FILENAME = 'update.log';
+    //$Application->LOG_FILENAME = 'update.log';
     require_once UNIT('ws','ws.php');
 };
 

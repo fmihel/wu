@@ -112,7 +112,7 @@ class arch{
 
                     if (!mkdir($createPath, 0777, true)){
                         $can = false;
-                        _LOGF('mkdir("'.$createPath.'")','error',__FILE__,__LINE__);
+                        //_LOGF('mkdir("'.$createPath.'")','error',__FILE__,__LINE__);
                     }
                 } 
                 
@@ -148,7 +148,7 @@ class arch{
         $catalog = $catalog['dealers']['data'];
         
         //_LOGF($catalog[0]['child'][0],'catalog',__FILE__,__LINE__,'arr:2,deep:8,str:0');
-    
+        
         self::_createStruct(self::$path.self::$catalog,$catalog);
         
         return true;

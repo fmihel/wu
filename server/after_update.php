@@ -56,7 +56,7 @@ if (isset($_REQUEST['step'])){
             $out['res'] = 1;
             break;
         case 2:
-
+            
             //archAll::$path = '../../archAll/tmp/';
             //archAll::$catalogPath = '../../createTree/catalog.js';
             //archAll::$mediaPath = '../../../../';  
@@ -69,7 +69,8 @@ if (isset($_REQUEST['step'])){
             arch::$zipPath       = WS_CONF::GET('arch_zipPath');  
 
             arch::create();
-            
+            //echo arch::debug_info();
+    
             
             $out['res'] = 1;
             break;
