@@ -430,6 +430,7 @@ class UPDATE_UTILS  {
         //----------------------------------------------------------------------
         $bdr = new Bdr($table.'.bdr');
         $errors = array();
+        $space = '{%$space%}';
         //----------------------------------------------------------------------
         // масив существующих полей
         $FIELDS_WEB = base::fieldsInfo($bdr->table,true,'deco');
@@ -451,7 +452,12 @@ class UPDATE_UTILS  {
             while(strpos($str,'[</ROW>]')===false){
                 $field = trim(substr($str,strlen('[<FIELD>]'),strlen($str)));
                 $str = $bdr->gets();
-                $value = trim(substr($str,strlen('[<DATA>]'),strlen($str)));
+                //$value = trim(substr($str,strlen('[<DATA>]'),strlen($str)));
+                
+                $value = substr($str,strlen('[<DATA>]'),strlen($str));
+                $value = STR::replace_loop(' ',$space,$value);
+                $value = trim($value);
+                $value = STR::replace_loop($space,' ',$value);
                 
                 //$field = mb_convert_encoding($field,'UTF-8','ASCII');
                 $VALUES[$field] = $value;   

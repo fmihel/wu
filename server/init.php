@@ -11,6 +11,7 @@ if(!isset($Application)){
     $Application->LOG_TO_ERROR_LOG  = false; 
     //$Application->LOG_FILENAME = 'update.log';
     require_once UNIT('ws','ws.php');
+    require_once UNIT('utils','common.php');
 };
 
 
