@@ -126,6 +126,7 @@ $DELETED_TABLES = array(
     'CTLG_NODE',
     'CTLG_SUBSET',
     'CTLG_SUBSET_NODE',
+    'C_MEDIA_FILE',
     
     'J_TMPL',
     'J_TMPL_PAR',

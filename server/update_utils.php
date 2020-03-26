@@ -209,8 +209,7 @@ class UPDATE_UTILS  {
     public static function info($file){
         global $Application;
         $out = array('res'=>0);
-        _LOGF('in','in',__FILE__,__LINE__);
-    
+
         if (!self::unpack($file)){
             _LOG("Error unpack [$file]",__FILE__,__LINE__);
             return $out;
@@ -393,11 +392,14 @@ class UPDATE_UTILS  {
                 
                 if (array_search($TABLE,$DELETED_TABLES)!==false){
                     $q = "delete from `$TABLE` where $ID_FIELD=$ID";
-                _LOG('['.print_r($q,true).']',__FILE__,__LINE__);
-    
+                    //_LOG('['.print_r($q,true).']',__FILE__,__LINE__);
                 }else
                     $q = "update $TABLE set ARCH=1 where $ID_FIELD=$ID";
                     
+                
+                if ($TABLE === 'C_MEDIA_FILE')
+                    self::clearMediaFile($ID);                    
+                
                     
                 if (SAVE_UPDATE_CHANGES){            
                     if (!base::query($q,'deco')){
@@ -424,7 +426,41 @@ class UPDATE_UTILS  {
         
         $bdr->close();
         return array('res'=>$res,'msg'=>$msg);
-    }    
+    }
+    /**
+     * осуществляет поиск файла в папке media и удаляет его
+     * путь берется из C_MEDIA_FILE.PATH_WWW
+     * @param {int} $ID_C_MEDIA_FILE
+     * @return {boolean}
+     */ 
+    public static function clearMediaFile($ID_C_MEDIA_FILE){
+        global $Application;
+        try{
+            
+            $q = 'select `PATH_WWW` from C_MEDIA_FILE where ID_C_MEDIA_FILE = '.$ID_C_MEDIA_FILE;
+            
+            $file  = base::valueE($q,'PATH_WWW','','deco');
+            if ($file !=''){
+                
+                // выстраиваем относительный путь
+                $path   = APP::get_path($file);
+                $path   = APP::slash($Application->ROOT,false,true).'media'.APP::slash($path,true,false);
+                $path   = APP::rel_path( $Application->PATH , $path );
+                $file   = APP::slash($path,false,true).APP::get_file($file);
+            
+                if ( file_exists($file) )
+                    if (!unlink($file))
+                        throw new Exception("can`t delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE");
+            }
+            return true;
+            
+        }catch(Exception $e){
+            console::error($e);
+        }
+        
+        return false;
+    }
+    
     /** шаг обновления */
     public static function update_step($table,$index,$count_recs = 1){
         //----------------------------------------------------------------------
