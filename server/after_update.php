@@ -5,8 +5,10 @@
  * Выполнение идет пошагово. 
  * В начале нужно запросить кол-во шагов
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&count
+ * windeco/wu/server/after_update.php?key=kdiun78js&count
  * Выполнение шага:
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&step=NNN
+ * windeco/wu/server/after_update.php?key=kdiun78js&step=NNN
  * 
  */
 
@@ -30,8 +32,6 @@ if (isset($_REQUEST['count'])){
     echo $COUNT_STEPS;
     exit;
 };
-
-
 
 $catalogJsPath = __DIR__.WS_CONF::GET('catalogJsPath');
 

@@ -73,24 +73,53 @@ $ICONS = array(
 
 );
 
-$RUS_BUK = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я'];
+$RUS_BUK = ['а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ъ','э','ю','я'];
+$RUS_BUK_UP = ['А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ь','Ы','Ъ','Э','Ю','Я'];
+
 $ENG_BUK = ['a','b','v','g','d','e','e','g','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','c','c','s','s','' ,'' ,'' ,'e','u','y'];
 
 class TREE_GENERATE{
     private static $coding = 'utf8';
+    private static $print = [];
 
-    public static function create($saveToFile = false){
+    public static function create($saveToFile = false,$param=[]){
+        $beautyFormat = true;
+        $param = array_merge([
+            'enableOffline'     =>true,
+            'pathOffline'       =>false    
+        ],$param);
+        
+        if ( ($param['pathOffline']===false) 
+            &&
+             ($saveToFile) 
+            && 
+             ($param['enableOffline'])
+        ){
+            $param['pathOffline'] = APP::get_path($saveToFile);
+        }
+        
         try{
             $out = [];
-            
+            $offline = [];
+            $offlineBase = [];
+            $images = [];
             $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
             $ds = base::dsE($q,'deco',self::$coding);
             
             $row = [];
             while(base::by($ds,$row)){
-                $out[] = self::_create($row,'');
+                $name = self::translit('',$row);
+                $res = self::_create($row,'');
+                $out[] = $res['all'];
+                $offline[$name] = [
+                    'caption'=>self::ucfirst(trim(mb_strtolower($row['CAPTION']))),
+                    'data'=>$res['offline']
+                ];
+                $offlineBase[$name] = $res['base'];
+                $images = $images+$res['images'];
+                
             }
-        
+    
             $out[]=[
                 'caption'=>'Личный кабинет',
                 'icon'=>'file',
@@ -103,9 +132,54 @@ class TREE_GENERATE{
             ];  
             
             if ($saveToFile){
-            
-                $json = ARR::to_json($out);
+                $cr = $beautyFormat?chr(13).chr(10):'';
+                $json = ARR::to_json($out,$beautyFormat);
                 file_put_contents($saveToFile,'var catalog2='.$json.';');
+
+                if ($param['enableOffline']){
+                    $code = 'var base = { menu :[ { id:"main",caption:"Windeco",link:"/",exact:true},';
+
+                    foreach($offline as $name=>$item){
+                        $code.='{'.$cr;
+                        $code.='id:"'.$name.'",'.$cr;
+                        $code.='caption:"'.$item['caption'].'",'.$cr;
+                        $code.='link:"/'.$name.'",'.$cr;
+                        $code.='},'.$cr;
+
+                        //$json = ARR::to_json($data,true);
+                        //file_put_contents($param['pathOffline'].$name.'.js',"var $name=".$json.';');
+                    }
+                    $code.='],';//menu
+                    $code.='tree:{';
+                    foreach($offline as $name=>$item){
+                        $code.=$name.':';
+                        $code.= ARR::to_json($item['data']['childs'],$beautyFormat);
+                        $code.=',';
+
+                        //$json = ARR::to_json($data,true);
+                        //file_put_contents($param['pathOffline'].$name.'.js',"var $name=".$json.';');
+                    }
+                    $code.='},';//tree
+                    $code.='};';//base
+                    file_put_contents($param['pathOffline'].'index.js',$code);
+
+                    foreach($offlineBase as $name=>$data){
+                        
+                        $json = ARR::to_json($data,$beautyFormat);
+                        file_put_contents($param['pathOffline'].$name.'-base.js',"var ".$name."_base=".$json.';');
+                    }
+                    
+                    $php = '';
+                    $count = 100000;
+                    foreach($images as $name=>$image){
+                        //$php.='"'.$name.'"=>"'.quotemeta($image).'",'.$cr;
+                        $count--;
+                        if ($count>0)
+                        $php.="'".$name."'=>'".$image."',".$cr;
+                    }
+                    file_put_contents($param['pathOffline'].'images.php','<?php $images=['.$php.']?>');
+                    
+                }
             
             }else
                 return $out;
@@ -117,7 +191,7 @@ class TREE_GENERATE{
         
     }
     
-    private static function _create($node,$parent){
+    private static function _create($node,$parent,$param=[]){
         global $SRCE_KIND;
         global $ICONS;
         
@@ -126,19 +200,43 @@ class TREE_GENERATE{
         $kind   = $SRCE_KIND[$node['SRCE_KIND']];
         $FIELD  = $kind['field'];
         $TABLE  = $kind['table'];
-                
-        $out           = [];
-        $out['id']     =   $node['ID_CTLG_NODE'];
-        $out[$FIELD]   =   $ID;
-        $out['table']  =   $TABLE;
+        
+        //-------------------------------------------------------------------------------------------------------
+        $images = [];
+        //-------------------------------------------------------------------------------------------------------
+        $out            = [];
+        
+        $out['id']      =   $node['ID_CTLG_NODE'];
+        $out[$FIELD]    =   $ID;
+        $out['table']   =   $TABLE;
                 
         $out['caption']    =   self::stringCorrect($node['CAPTION']);
-        $out['icon']       =   $ICONS[$node['ICON_IND']];
+        $out['icon']       =   isset($ICONS[$node['ICON_IND']])?$ICONS[$node['ICON_IND']]:$ICONS[11];
         $out['SRCE_KIND']  =   $node['SRCE_KIND'];
         
         $out['hash']       =   self::translit($parent,$node);
                 
         $out['media'] = self::_get_media($ID,COMMON::get($kind,'media_kind',''));
+        //-------------------------------------------------------------------------------------------------------
+        $offline  = [
+            'id'=>$node['ID_CTLG_NODE'],
+            'caption'=>str_replace(['&quot;'],[],$out['caption']),
+        ];
+        //-------------------------------------------------------------------------------------------------------
+        $dataParam = [
+            $FIELD=>$ID,
+            'table'=>$TABLE,
+            'type'=>'',
+            'media'=>$out['media']
+        ];
+
+        //-------------------------------------------------------------------------------------------------------
+        $currentBaseId = 'id-'.$node['ID_CTLG_NODE'];
+        $base = [
+            $currentBaseId=>[
+                'caption'=>$offline['caption'],
+            ]
+        ];
         //-------------------------------------------------------------------------------------------------------
         $q = 'select distinct ID_CTLG_SUBSET from CTLG_SUBSET_NODE where ID_CTLG_NODE = '.$node['ID_CTLG_NODE'];
         $ds = base::dsE($q,'deco');
@@ -150,30 +248,62 @@ class TREE_GENERATE{
         //-------------------------------------------------------------------------------------------------------
 
         $child = [];
+        $childOffline = [];
+        $childBase = [];
         $q = 'select * from CTLG_NODE where ID_PARENT = '.$node['ID_CTLG_NODE'].' and  ARCH<>1 order by NOM_PP';
         $ds = base::dsE($q,'deco',self::$coding);
         $row = [];
         while(base::by($ds,$row)){
-            $child[]=self::_create($row,$out['hash']);
+            $res        = self::_create($row,$out['hash'],$param);
+            $child[]    = $res['all'];
+            $childOffline[]  = $res['offline'];
+            $childBase = array_merge($childBase,$res['base']);
+            $images = array_merge($images,$res['images']);
         }
-        
+
+        $addition = [];
         if ($node['SRCE_KIND']==0){
             if (count($child)===0)
                 $out['viewAs']='gallery';      
         }else if (($node['SRCE_KIND']==1)||($node['SRCE_KIND']==2)||($node['SRCE_KIND']==6)||($node['SRCE_KIND']==7)){
             $out['IS_CHAPTER']          =   ($kind['is_chapter']?1:0);
-            $out = array_merge($out,self::karniz($node));
+            //$offline['IS_CHAPTER'] = $out['IS_CHAPTER'];
+            $dataParam['IS_CHAPTER'] = $out['IS_CHAPTER'];
+            $addition = self::karniz($node);
+            $out = array_merge($out,$addition); 
+            //$offline = array_merge($offline,$addition);
+            $dataParam['type']='karniz';
+            
         }else if (($node['SRCE_KIND']==8)||($node['SRCE_KIND']==9)){
-            $out = array_merge($out,self::tkani($node));
+            $addition = self::tkani($node);
+            $out = array_merge($out,$addition);
+            $dataParam['type']='tkani';
+            
         }else if (($node['SRCE_KIND']==10)||($node['SRCE_KIND']==11)){
-            $out = array_merge($out,self::jaluzi($node));                    
+            $addition = self::jaluzi($node);
+            $out = array_merge($out,$addition);
+            $dataParam['type']='jaluzi';                    
         }                    
+
+        
+        $offlineData = self::getOfflineData(array_merge($dataParam,$addition));
+        $images = array_merge($images,$offlineData['images']);
+
+        $base[$currentBaseId]['data'] = $offlineData['out'];
+
+        if (count($childOffline)>0)
+            $offline['childs'] = $childOffline;
 
         if (count($child)>0)
             $out['child'] = $child;
         //-------------------------------------------------------------------------------------------------------
         
-        return $out;
+        return [
+            'all'       =>  $out,
+            'offline'   =>  $offline,
+            'base'      =>  array_merge($base,$childBase),
+            'images'    =>  $images
+        ];
     }
     private static function stringCorrect($str){
         
@@ -380,6 +510,225 @@ class TREE_GENERATE{
         $out = str_replace($RUS_BUK,$ENG_BUK,$out);
         
         return $pref.($pref!==''?"/":"").$out;
+    }
+
+    private static function getOfflineData($param=[]){
+        $out = [];
+        $images = [];
+
+        $originalImages = COMMON::get($param,'media','gallery',[]);
+        foreach($originalImages as $image){
+            $name =  str_replace(['.jpg'],[''],basename($image));
+            $out[]=['image'=>$name];
+            $images[$name] = $image;
+        }
+
+
+        $from = ['out'=>[],'images'=>[]];
+        if ($param['type'] === 'karniz'){
+            $from = self::getOfflineDataKarniz($param);
+        }
+        if ($param['type'] === 'jaluzi'){
+            $from =self::getOfflineDataJaluzi($param);
+        }
+        if ($param['type']==='tkani'){
+            $from = self::getOfflineDataTkani($param);
+        }
+        $out = array_merge($from['out'],$out);
+        
+
+        foreach($from['images'] as $image){
+            $name =  str_replace(['pic.php?','='],['','_'],basename($image));
+            $images[$name] = $image;
+        }
+        
+
+        return ['out'=>$out,'images'=>$images];
+    }
+    private static function getOfflineDataKarniz($param){
+        $out=['out'=>[],'images'=>[]];
+        if ($param['viewAs'] === 'karnizA'){
+            $q = self::sql($param['viewAs'],$param);
+            $ds = base::ds($q,'deco','utf8');
+            /*$func = function($v){
+                return ['name'=>$v];
+            };
+            $fields = array_map($func,base::fields($ds,true));
+            */
+            $fields=[
+                ['name'=>'TOVAR','caption'=>'Товар'],
+                ['name'=>'PROP','width'=>100,'caption'=>'св-во'],
+                ['name'=>'ART','width'=>100,'caption'=>'артикул'],
+                ['name'=>'COLOR','width'=>150,'caption'=>'цвет'],
+                ['name'=>'PRICE','width'=>100,'caption'=>'цена'],
+                ['name'=>'ED_IZM','width'=>50,'caption'=>'ед.']
+            ];
+            $out['out']=[[
+                'table'=>[
+                    'fields'    =>  $fields,
+                    'rows'      =>  base::rows($ds),
+                ]
+            ]];
+        
+        } elseif ($param['viewAs'] === 'karnizB') {
+            
+        } elseif ($param['viewAs'] === 'gallery'){
+
+        }
+        
+        return $out;
+    }
+    private static function getOfflineDataJaluzi($param){
+        $out    = ['out'=>[],'images'=>[]];
+        $ID     = $param['ID'];
+        $TABLE  = $param['table'];
+        $is_folder = $TABLE==='J_FOLDER'?true:false; 
+        
+
+        //if ( self::prin('param',$ID,$TABLE) ){
+            
+            $price = jaluzi::price($ID,$is_folder);
+            $caption = '';
+            foreach($price['data'] as $data){
+                if ($caption==='') 
+                    $caption = $data['SET']['NAME'];
+                $blocks = $data['BLOCKS'];
+                foreach($blocks as $block){
+                    if ($block['TYPE'] === 'GRID'){
+                        $out['out'][]=[
+                            'table'=>[
+                                'fields'    =>  array_map(function($field){ $field['caption']=strip_tags($field['caption']); return $field;  },$block['FIELDS']),
+                                'rows'      =>  $block['ROWS'],
+                                'kind_show' =>  $block['KIND_SHOW'],
+                                'param'     =>  $block['PARAM']
+                            ]
+                        ];
+                    }elseif ($block['TYPE'] === 'IMAGE'){
+                        $out['out'][]=[
+                            'image'=> str_replace(['pic.php?','='],['','_'],basename($block['URL']))
+                        ];
+                        $out['images'][]=$block['URL'];
+                    }
+                }
+                    
+            }
+           
+        //}
+        //self::print(['ID'=>$ID,'table'=>$TABLE]);
+//        }
+        
+        return $out;
+    }
+    private static function getOfflineDataTkani($param){
+        //echo '<xmp>';
+        //print_r($param);
+        //echo '</xmp>';
+        $out = ['out'=>[],'images'=>[]];
+        if (isset($param['ID_TX_SET'])){
+            $ID_TX_SET = $param['ID_TX_SET'];
+                $table = TKANI::price($ID_TX_SET,-1,['enableCache'=>false]);
+                if (isset($table['fields']) && isset($table['data'])){
+                    $out['out']=[[
+                        'table'=>[
+                            'fields'    =>  $table['fields'],
+                            'rows'      =>  $table['data'],
+                        ]
+                    ]];                
+                }
+                //echo '<xmp>';
+                //print_r($out);
+                //echo '</xmp>';
+               
+        }
+        return $out;
+    }
+    private static function ucfirst($str){
+        global $RUS_BUK;
+        global $RUS_BUK_UP;
+        $first = ucfirst(mb_substr($str,0,1));
+        
+        $index = array_search($first,$RUS_BUK);
+        if ($index!==false){
+            $first = $RUS_BUK_UP[$index];
+        }
+        
+        return $first.mb_substr($str,1);
+    }
+
+    private static function sql($name,$init=[]){
+        if ($name === 'karnizA'){
+            $init = array_merge([
+                        'koef'=>1
+                    ],$init);
+
+            $q = '
+            SELECT
+            DISTINCT mtd.ID_K_MODEL_TOVAR_DETAIL ID,
+            t.NAME TOVAR,
+            (
+            SELECT
+                GROUP_CONCAT(concat(pk.TITLE,
+                p.VAL)) AS PROP
+            FROM
+                PROP p,
+                PROP_KIND pk
+            WHERE
+                td.ID_K_TOVAR_DETAIL = p.ID_OWNER
+                AND p.ID_PROP_KIND = pk.ID_PROP_KIND
+                AND p.ARCH <> 1 ) PROP,
+            td.ART,
+            c.NAME_FULL COLOR,
+            /*wk.CAPTION ,*/
+            mtd.PRICE_CATALOG PRICE,
+            ez.NAME_SHORT ED_IZM
+        FROM
+            K_MODEL_TOVAR mt
+        JOIN K_MODEL_TOVAR_DETAIL mtd ON
+            mt.ID_K_MODEL_TOVAR = mtd.ID_K_MODEL_TOVAR
+        JOIN K_TOVAR_DETAIL td ON
+            td.ID_K_TOVAR_DETAIL = mtd.ID_K_TOVAR_DETAIL
+        JOIN K_TOVAR t ON
+            td.ID_K_TOVAR = t.ID_K_TOVAR
+        JOIN K_WIN_KIND wk ON
+            t.ID_K_WIN_KIND = wk.ID_K_WIN_KIND
+        LEFT OUTER JOIN K_COLOR c ON
+            td.ID_K_COLOR = c.ID_K_COLOR
+        LEFT OUTER JOIN ED_IZM ez ON
+            t.ID_ED_IZM = ez.ID_ED_IZM
+            ';
+            
+            if ($init['IS_CHAPTER']=='1')
+                $q.= ' where mt.ID_K_CHAPTER='.$init['ID_K_CHAPTER'];
+            else
+                $q.= ' where mt.ID_K_MODEL='.$init['ID_K_MODEL'];
+            
+            $q.=' and t.ARCH<>1 and td.ARCH<>1 and mtd.ARCH<>1 ';    
+            $q.='  order by mt.NOM_PP, t.NAME,PROP, mtd.PRICE_CATALOG ';
+            return $q;
+        }
+    }
+    /**вывод на экоан для льадки */
+    private static function print(...$a){
+        echo '<xmp>';
+        foreach($a as $item){
+            print_r($item);
+        }
+        echo '</xmp>';
+    }
+    /**вывод на экран только один раз или указанное число раз */
+    private static function prin($var,...$a){
+        if (!is_array($var)){
+             $var = [$var,1];   
+        }
+        if (!isset(self::$print[$var[0]]))
+            self::$print[$var[0]]=$var[1];
+
+        if (self::$print[$var[0]]>0){
+            self::$print[$var[0]]--;
+            self::print(...$a);
+            return true;
+        }
+        return false;
     }
 }
 ?>
