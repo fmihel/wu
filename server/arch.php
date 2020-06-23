@@ -26,6 +26,10 @@ class arch{
     static $zipPath='';
     
     static function create(){
+        
+        if (file_exists(self::$zipPath)){ 
+            @unlink(self::$zipPath);
+        };
 
         if (!self::clearTmp())      return false;
         if (!self::createStruct())  return false;
@@ -54,7 +58,7 @@ class arch{
         $dir = APP::slash(self::$path,false,true);
         if (DIR::exist($dir))
             DIR::clear($dir);
-            
+
         return true;
     }
     
@@ -89,7 +93,7 @@ class arch{
         $text = STR::replace_loop('__','_',$text);
         return $text;
     }
-
+    
     private static function _createStruct($toPath,$catalog,$level=0,$path='/'){
 
         //if ($level===4) return '';
@@ -121,9 +125,10 @@ class arch{
 
                     $file= $download[$k]['PATH_WWW'];
                     $from =  self::$mediaPath.str_replace(self::$mediaHttp,'',$file);
+                    $file = self::crop($file,20,'file');
                     $to = APP::slash($createPath,false,true).APP::get_file($file);
 
-                    if (!copy($from,$to))
+                    if (!@copy($from,$to))
                         _LOGF(array($from,$to),'error copy',__FILE__,__LINE__);
     
                 }    
@@ -175,6 +180,21 @@ class arch{
         }    
 
         return true;
+    }
+    /**
+     * обрезка имени (папки или файла)
+    */
+    static private function crop($value,$maxlen=20,$type = 'file'){
+        if ($type === 'file'){
+            if (strlen($value)>$maxlen+5){
+                $info = APP::pathinfo($value);
+                //$value = substr($info['filename'],0,$maxlen).STR::random(5).$info['extension'];
+                $value = substr($info['filename'],0,$maxlen).'_'.STR::random(4).'.'.$info['extension'];
+            }        
+        }else{
+            $value = substr($value,0,$maxlen).STR::random(5).$info['ext'];            
+        }
+        return $value;
     }
     
 }
