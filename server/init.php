@@ -51,6 +51,38 @@ require_once UNIT('utils','common.php');
 
 require_once './connect.php';
 require_once './update_consts.php';
+require_once './session.php';
+
+//------------------------------------------------------------------------------
+$unit_php = WS_CONF::get('tkani.php','../../release/source/common/tkani.php');
+if (!file_exists($unit_php)){
+    echo RESULT_ERROR;
+    _LOG('cant find unit '.$unit_php,__FILE__,__LINE__);
+    exit;
+}else{
+    require_once $unit_php;
+}
+//------------------------------------------------------------------------------
+$unit_php = WS_CONF::get('jaluzi.php','../../release/source/common/jaluzi.php');
+if (!file_exists($unit_php)){
+    echo RESULT_ERROR;
+    _LOG('cant find unit '.$unit_php,__FILE__,__LINE__);
+    exit;
+}else{
+    require_once $unit_php;
+}
+
+//------------------------------------------------------------------------------
+$unit_php = WS_CONF::get('common.php','../../release/source/common/common.php');
+if (!file_exists($unit_php)){
+    echo RESULT_ERROR;
+    _LOG('cant find unit '.$unit_php,__FILE__,__LINE__);
+    exit;
+}else{
+    require_once $unit_php;
+}
+//------------------------------------------------------------------------------
+
 
 
 
