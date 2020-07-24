@@ -11,7 +11,7 @@ SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
 */
 
 $SRCE_KIND = array(
-    array('table'=>'','field'=>'SRCE_ID'),//0
+    array('table'=>'','field'=>'SRCE_ID','media_kind'=>3),//0
     array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER','is_chapter'=>true,'media_kind'=>2),//1
     array('table'=>'K_MODEL',       'field'=>'ID_K_MODEL',  'is_chapter'=>false,'media_kind'=>1),//2
     array('table'=>'',              'field'=>''),//3
@@ -138,7 +138,7 @@ class TREE_GENERATE{
         
         $out['hash']       =   self::translit($parent,$node);
                 
-        $out['media'] = self::_get_media($ID,COMMON::get($kind,'media_kind',''));
+        $out['media'] = self::_get_media( ($ID!='0'?$ID:$node['ID_CTLG_NODE']) ,COMMON::get($kind,'media_kind',''));
         //-------------------------------------------------------------------------------------------------------
         $q = 'select distinct ID_CTLG_SUBSET from CTLG_SUBSET_NODE where ID_CTLG_NODE = '.$node['ID_CTLG_NODE'];
         $ds = base::dsE($q,'deco');

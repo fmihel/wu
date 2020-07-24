@@ -7,7 +7,7 @@
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&count
  * Выполнение шага:
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&step=NNN
- * 
+ * windeco/wu/server/after_update.php?key=kdiun78js&step=NNN
  */
 
     
