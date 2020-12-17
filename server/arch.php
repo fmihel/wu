@@ -147,10 +147,10 @@ class arch{
             mkdir(self::$path);
         
         $json = file_get_contents(self::$catalogPath);
-        $json = str_replace('var catalog=','',$json);
+        $json = str_replace('var catalog2=','',$json);
         
         $catalog = ARR::from_json_ex($json);
-        $catalog = $catalog['dealers']['data'];
+        //$catalog = $catalog['dealers']['data'];
         
         //_LOGF($catalog[0]['child'][0],'catalog',__FILE__,__LINE__,'arr:2,deep:8,str:0');
         

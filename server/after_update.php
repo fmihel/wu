@@ -56,6 +56,20 @@ if (isset($_REQUEST['step'])){
             $out['res'] = 1;
             break;
         case 2:
+            // очистка кеша BUFFER
+            $q = 'truncate table BUFFER';
+            if (base::query($q,'deco'))
+                $out['res'] = 1;
+            break;
+        case 3:
+
+            try{
+                TREE_GENERATE::create($catalogJsPath.'/catalog_new.js');
+            }catch(Exception $e){
+            }
+            $out['res'] = 1;
+            break;
+        case 4:
             
             //archAll::$path = '../../archAll/tmp/';
             //archAll::$catalogPath = '../../createTree/catalog.js';
@@ -72,20 +86,6 @@ if (isset($_REQUEST['step'])){
             //echo arch::debug_info();
     
             
-            $out['res'] = 1;
-            break;
-        case 3:
-            // очистка кеша BUFFER
-            $q = 'truncate table BUFFER';
-            if (base::query($q,'deco'))
-                $out['res'] = 1;
-            break;
-        case 4:
-
-            try{
-                TREE_GENERATE::create($catalogJsPath.'/catalog_new.js');
-            }catch(Exception $e){
-            }
             $out['res'] = 1;
             break;
     }
