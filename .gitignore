@@ -43,3 +43,5 @@
 *.dsk
 *.stat
 *.log
+
+workspace.code-workspace
