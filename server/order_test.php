@@ -1,15 +1,13 @@
 <?php
-
-class session {
-    static $data = [
-        'ID_USER'=>-1,
-        'PRICE_VIEW_TYPE'=>1,
-        'KOEF_JALUZI'=>1,
-        'ID_DEALER'=>21039
-    ];
-    static $enable = true;
-}
-
+/** ORDER_TEST - тестирование заказов. 
+ *  
+ */
+//-------------------------------
+/** куда отправлять, если ошибка (пока в заказе жалюзи) */
+//WS_CONF::DEF('emails-for-system-report',['fmihel76@gmail.com']);
+WS_CONF::DEF('emails-for-system-report',[]);
+//-------------------------------
+/** подключение доп модулей */
 WS_CONF::DEF('require_order_test',[
     '../../dev/source/common/order_const.php',
     '../../dev/source/tables/tables.php',
@@ -19,38 +17,51 @@ WS_CONF::DEF('require_order_test',[
     '../../dev/source/common/order_jaluzi.php',
     '../../dev/source/common/jaluzi.php',
 ]);
-WS_CONF::DEF('emails-for-system-report',['fmihel76@gmail.com']);// куда отправлять, если ошибка (пока в заказе жалюзи)
-
 $require_order_test = WS_CONF::GET('require_order_test');
 foreach($require_order_test as $file)
     require_once $file;
-
+//-------------------------------
+/** иммитация сессии */
+class session {
+    static $data = [
+        'ID_USER'=>-1,
+        'PRICE_VIEW_TYPE'=>1,
+        'KOEF_JALUZI'=>1,
+        'ID_DEALER'=>21039,
+    ];
+    static $enable = true;
+}
+//-------------------------------
 
 class ORDER_TEST{
-    
+    /**  кол-во заказов для тестирования */
     public static function count(){
         try {
-            return base::valE('select count(ID_ORDER) from ORDERS where FOR_TEST=1',0,'deco');
+            return base::valE('select count(ID_ORDER) from ORDERS where FOR_TEST=1 and DELETED=0',0,'deco');
         } catch (\Exception $e) {
             error_log('Exception ['.__FILE__.':'.__LINE__.'] '.$e->getMessage());
         };
         return 0;
     }
+    /** тестирование i-го заказа, результаты уйдут на почту указанную в конфиге в emails-for-system-report */
     public static function step($i){
 
         try {
 
-            $orders = base::rowsE('select * from ORDERS where FOR_TEST =1 order by ID_ORDER','deco');
+            $orders = base::rowsE('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER','deco');
             $order = $orders[$i];
             $test = self::test($order);
-
+            
             if (COMMON::get($test,'result','msg','') != '' ){
 
-                $tests[]=array_merge(['ID_ORDER'=>$order['ID_ORDER']],$test['result']);
-                $xml = ARR::to_json($tests,true,0,['left'=>'&nbsp;&nbsp;&nbsp;&nbsp;','cr'=>'<br>']);
+                $test=array_merge(['ID_ORDER'=>$order['ID_ORDER']],$test['result']);
+                $msg = $test['msg'];
+                unset($test['msg']);
+                
+                $out = ARR::to_json($test,true,0,['left'=>'&nbsp;&nbsp;&nbsp;&nbsp;','cr'=>'<br>']);
                 
                 COMMON_UTILS::sendReportToAdmin([
-                    'msg'=>$xml
+                    'msg'=>'Заказа N '.$order['NOM_ORDER'].' не прошел тест.<br>'.$msg.'<br>'.$out
                 ]);
             };
        
@@ -59,8 +70,10 @@ class ORDER_TEST{
             error_log('Exception ['.__FILE__.':'.__LINE__.'] '.$e->getMessage());
         };
     }
+    /** запуск теста*/
     private static function test($param=[]){
         try {
+            
             $out = [];
 
             $p = array_merge([  
@@ -76,7 +89,10 @@ class ORDER_TEST{
             $copy = ORDER::crCopy($p['ID_ORDER']);
             if ($copy['res']==0)
                 throw new Exception("ошибка создания копии");
-            
+
+            // пометим заказа к удалению, на случай если что-то пойдет не так, то в в след разах его можно будет удалить
+            ORDER::delete($copy['ID_ORDER'],['only-select'=>true]);
+
             // пересчитываем копию -----------------------    
             if ($p['ID_ORDER_KIND'] == 3){ // для жалюзи
                 $original = ORDER::load($p['ID_ORDER'])['products'];
@@ -93,12 +109,38 @@ class ORDER_TEST{
 
         } catch (\Exception $e) {
             error_log('Exception ['.__FILE__.':'.__LINE__.'] in ORDER_TEST::test('.print_r($param,true).') '.$e->getMessage());
+
             return ['res'=>0,'msg'=>$e->getMessage()];
         };
         return ['res'=>0];
         
     }
+    /** обновление всех тестов (сброс предыдущих состояний и фиксация новых) */
+    public static function reculcAllTest(){
+        try {
+            $ds = base::dsE('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER','deco');
+            while($order = base::read($ds))
+                self::reculc($order);
+            
+        } catch (\Exception $e) {
+            error_log('Exception ['.__FILE__.':'.__LINE__.'] '.$e->getMessage());
+        };
+    }
+    /** пересчет заказа */
+    private static function reculc($param=[]){
+        $param = array_merge([
+            'ID_ORDER'=>1
+        ],$param);
+        try {
+            //$order = base::rowE('select * from ORDERS where ID_ORDER = '.$param['ID_ORDER'],'deco');
+            $data = ORDER::load($param['ID_ORDER']);
+            ORDER::update($data,['reculc'=>1,'reculcSum'=>1,'enableLock'=>0]);
 
+
+        } catch (\Exception $e) {
+            error_log('Exception ['.__FILE__.':'.__LINE__.'] '.$e->getMessage());
+        };
+    }
     /**  сравнение изделий */
     private static function jeqProducts($from,$to){
         

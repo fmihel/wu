@@ -8,7 +8,7 @@ if(!isset($Application)){
         require_once '../'.$file;
     
     $Application->LOG_ENABLE        = true;
-    $Application->LOG_TO_ERROR_LOG  = false; 
+    $Application->LOG_TO_ERROR_LOG  = true; 
     //$Application->LOG_FILENAME = 'update.log';
     require_once UNIT('ws','ws.php');
     require_once UNIT('utils','common.php');

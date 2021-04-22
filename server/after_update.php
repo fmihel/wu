@@ -9,6 +9,7 @@
  * Выполнение шага:
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&step=NNN
  * windeco/wu/server/after_update.php?key=test&step=NNN
+ * windeco/wu/server/after_update.php?key=test&reculcAllTest
  */
 
     
@@ -32,6 +33,13 @@ if (isset($_REQUEST['count'])){
     echo $COUNT_STEPS + ORDER_TEST::count();
     exit;
 };
+//--------------------------------------------------------------------
+// сброс тестов
+if (isset($_REQUEST['reculcAllTest'])){
+    ORDER_TEST::reculcAllTest();
+    $out['res'] = 1;
+}
+
 //--------------------------------------------------------------------
 $catalogJsPath = __DIR__.WS_CONF::GET('catalogJsPath');
 //--------------------------------------------------------------------
