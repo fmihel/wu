@@ -132,7 +132,8 @@ $DELETED_TABLES = array(
     'J_TMPL_PAR',
     'J_TMPL_PAR_CHOICE',
     'J_TMPL_PAR_LIMIT',
-    'J_TMPL_PAR_VIS_COND'
+    'J_TMPL_PAR_VIS_COND',
+    'J_COLOR_MAP',
     
 );
 
