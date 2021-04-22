@@ -61,7 +61,7 @@ class ORDER_TEST{
                 $out = ARR::to_json($test,true,0,['left'=>'&nbsp;&nbsp;&nbsp;&nbsp;','cr'=>'<br>']);
                 
                 COMMON_UTILS::sendReportToAdmin([
-                    'msg'=>'Заказа N '.$order['NOM_ORDER'].' не прошел тест.<br>'.$msg.'<br>'.$out
+                    'msg'=>'Заказ N '.$order['NOM_ORDER'].' не прошел тест.<br>'.$msg.'<br>'.$out
                 ]);
             };
        
