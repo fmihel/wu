@@ -27,10 +27,12 @@ $out = array('res'=>0);
 
 //--------------------------------------------------------------------
 // кол-во шагов
-$COUNT_STEPS = 5;
+$COUNT_STEPS = 5; 
+$ORDER_TEST_START = $COUNT_STEPS;
+$ORDER_TEST_COUNT = ORDER_TEST::count();
 //--------------------------------------------------------------------
 if (isset($_REQUEST['count'])){
-    echo $COUNT_STEPS + ORDER_TEST::count();
+    echo $COUNT_STEPS + $ORDER_TEST_COUNT;
     exit;
 };
 //--------------------------------------------------------------------
@@ -38,6 +40,18 @@ if (isset($_REQUEST['count'])){
 if (isset($_REQUEST['reculcAllTest'])){
     ORDER_TEST::reculcAllTest();
     $out['res'] = 1;
+}
+//--------------------------------------------------------------------
+// сброс i-go теста
+if (isset($_REQUEST['reculcTest'])){
+    ORDER_TEST::reculc(['step'=>$_REQUEST['reculcTest']]);
+    $out['res'] = 1;
+}
+//--------------------------------------------------------------------
+// запуск всех тестов
+if (isset($_REQUEST['runAllTests'])){
+    ORDER_TEST::runAll();
+    exit;
 }
 
 //--------------------------------------------------------------------
@@ -96,7 +110,7 @@ if (isset($_REQUEST['step'])){
         
         $out['res'] = 1;
     //--------------------------------------------------------------------
-    }elseif($step>($COUNT_STEPS-1)){
+    }elseif( $step>=($ORDER_TEST_START) && $step<$ORDER_TEST_START+$ORDER_TEST_COUNT ){
         ORDER_TEST::step($step-$COUNT_STEPS);
         $out['res'] = 1;
     };

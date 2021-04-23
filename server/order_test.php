@@ -34,6 +34,67 @@ class session {
 //-------------------------------
 
 class ORDER_TEST{
+    /** запуск всех тестов */
+    public static function runAll(){
+        global $COUNT_STEPS;
+        global $ORDER_TEST_START;
+        global $ORDER_TEST_COUNT;
+
+                echo '
+        <html>
+            <head>
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+                <script type="text/javascript">
+                    const ORDER_TEST_START = '.$ORDER_TEST_START.';
+                    const ORDER_TEST_COUNT = '.$ORDER_TEST_COUNT.';
+                    const COUNT_STEPS = '.$COUNT_STEPS.';
+                    const key = "'.WS_CONF::GET('key').'";
+                </script>
+                <script src="./order_test.js"></script>
+                <style>
+                    body{
+                        overflow:auto;
+                        -webkit-font-smoothing: antialiased;
+                        -webkit-user-select: none;
+                        text-overflow: ellipsis;
+                        padding: 0px;
+                        background-color: #FBFBFB;
+                        color: black;
+                        font-size: 11px;
+                        font-family: Franklin Gothic Medium, sans-serif;
+                    }
+                    .panel{
+                        padding:5px;
+                    }
+                    .info{
+                        padding:5px;
+                    }
+                    .result{
+                        border:1px solid silver;
+                        padding:5px;
+                    }
+                    .result div{
+                        min-height:16px;
+                        border-bottom:1px solid silver;
+                    }
+                    .result div:nth-child(odd){
+                        background:#eaeaea;
+                    }
+                    
+                </style>
+            </head>
+            <body>
+                Тестирование <br>
+                <div class="panel">
+                <button id="start">запуск</button>
+                <button id="reculc">cброс</button>
+                </div>
+                <div id="info" class="info" >info..</div>
+                <div id="result"  class="result" >result...</div>
+            </body>
+        </html>
+        ';
+    }
     /**  кол-во заказов для тестирования */
     public static function count(){
         try {
@@ -127,11 +188,18 @@ class ORDER_TEST{
         };
     }
     /** пересчет заказа */
-    private static function reculc($param=[]){
+    public static function reculc($param=[]){
+        
         $param = array_merge([
-            'ID_ORDER'=>1
+            'ID_ORDER'=>1,
+            'step' =>-1,
         ],$param);
         try {
+            if ($param['step']>=0){
+                $rows = base::rowsE('select ID_ORDER from ORDERS where FOR_TEST=1  and DELETED=0 order by ID_ORDER','deco');
+                $param['ID_ORDER'] = $rows[$param['step']]['ID_ORDER'];
+            }
+
             //$order = base::rowE('select * from ORDERS where ID_ORDER = '.$param['ID_ORDER'],'deco');
             $data = ORDER::load($param['ID_ORDER']);
             ORDER::update($data,['reculc'=>1,'reculcSum'=>1,'enableLock'=>0]);
