@@ -9,22 +9,22 @@ SRCE_KIND = 9 :    SRCE_ID соотвествует  ID_TX_SET из TX_SET
 SRCE_KIND = 10 :   SRCE_ID соотвествует  ID из J_FOLDER
 SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
 */
-
 $SRCE_KIND = array(
-    /* 0*/array('table'=>'','field'=>'SRCE_ID','media_kind'=>3),
-    /* 1*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER','is_chapter'=>true,'media_kind'=>2),
-    /* 2*/array('table'=>'K_MODEL',       'field'=>'ID_K_MODEL',  'is_chapter'=>false,'media_kind'=>1),
-    /* 3*/array('table'=>'',              'field'=>''),
-    /* 4*/array('table'=>'',              'field'=>''),
-    /* 5*/array('table'=>'',              'field'=>''),
-    /* 6*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>2),
-    /* 7*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>2),
-    /* 8*/array('table'=>'TX_SECTION',    'field'=>'ID_TX_SECTION','media_kind'=>3),
-    /* 9*/array('table'=>'TX_SET',        'field'=>'ID_TX_SET','media_kind'=>3),
-    /*10*/array('table'=>'J_FOLDER',      'field'=>'ID','media_kind'=>3),
-    /*11*/array('table'=>'J_SET',         'field'=>'ID','media_kind'=>3),
+    /* 0*/array('table'=>'','field'=>'SRCE_ID','media_kind'=>0),
+    /* 1*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER','is_chapter'=>true,'media_kind'=>1),
+    /* 2*/array('table'=>'K_MODEL',       'field'=>'ID_K_MODEL',  'is_chapter'=>false,'media_kind'=>2),
+    /* 3*/array('table'=>'',              'field'=>'','media_kind'=>3),
+    /* 4*/array('table'=>'',              'field'=>'','media_kind'=>4),
+    /* 5*/array('table'=>'',              'field'=>'','media_kind'=>5),
+    /* 6*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>6),
+    /* 7*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>7),
+    /* 8*/array('table'=>'TX_SECTION',    'field'=>'ID_TX_SECTION','media_kind'=>8),
+    /* 9*/array('table'=>'TX_SET',        'field'=>'ID_TX_SET','media_kind'=>9),
+    /*10*/array('table'=>'J_FOLDER',      'field'=>'ID','media_kind'=>10),
+    /*11*/array('table'=>'J_SET',         'field'=>'ID','media_kind'=>11),
     
 );
+
 /*
 Иконки узлов
 0-Карнизы корень
