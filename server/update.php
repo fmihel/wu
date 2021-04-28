@@ -29,8 +29,8 @@ $delta  = $_REQUEST['delta'];
 if ($table === 'DELETED_LINES')
     $response = UPDATE_UTILS::deleted_lines($pos,$delta);
 /** в данной части обрабатывается сохранение блоб в фaйл*/    
-else if ($table === 'C_MEDIA_FILE')
-    $response = UPDATE_UTILS::media($pos,$delta);
+else if ( ($table === 'C_MEDIA_FILE') || (preg_match_all('/C_MEDIA_FILE_\S+/m', $table) > 0) )
+    $response = UPDATE_UTILS::media($pos,$delta,$table);
 else    
     $response = UPDATE_UTILS::update_step($table,$pos,$delta);
 

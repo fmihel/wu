@@ -635,7 +635,7 @@ class UPDATE_UTILS  {
         
     }
     
-    public static function media($index,$count_recs=1){
+    public static function media($index,$count_recs=1,$fileName = 'C_MEDIA_FILE'){
         $res = 1;
         //----------------------------------------------------------------------
         global $TABLE_INDEX;
@@ -645,7 +645,7 @@ class UPDATE_UTILS  {
         $FIELDS_WEB = \base::fieldsInfo($TABLE,true,'deco');
         
         //----------------------------------------------------------------------
-        $bdr = new Bdr($TABLE.'.bdr');
+        $bdr = new Bdr($fileName.'.bdr');
         //----------------------------------------------------------------------
         
         // Поиск нужной записи
