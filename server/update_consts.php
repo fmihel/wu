@@ -68,8 +68,15 @@ $TABLE_INDEX = array(
     'D_USER'            =>'ID_D_USER',
     'D_USER_RIGHT'      =>'ID_D_USER_RIGHT',
     'D_USER_ROLE'       =>'ID_D_USER_ROLE',
-    
-    
+
+    'K_COMPATIBLE'      =>'ID_K_COMPATIBLE',
+    'K_COMPONENT'       =>'ID_K_COMPONENT',
+    'K_COMP_CATEG'      =>'ID_K_COMP_CATEG',
+    'K_COMP_OWNER'      =>'ID_K_COMP_OWNER',
+    'K_COMP_PROP'       =>'ID_K_COMPONENT',
+    'K_M_COMP'          =>'ID_K_M_COMP',
+    'K_M_COMP_LINE'     =>'ID_K_M_COMP_LINE',
+    'K_M_VARIANT'       =>'ID_K_M_VARIANT',
     
 );
 
