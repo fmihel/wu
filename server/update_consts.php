@@ -78,6 +78,12 @@ $TABLE_INDEX = array(
     'K_M_COMP_LINE'     =>'ID_K_M_COMP_LINE',
     'K_M_VARIANT'       =>'ID_K_M_VARIANT',
     
+    'K_BRACKET'         =>'ID_K_BRACKET',
+    'K_TEMPL'           =>'ID_K_TEMPL',
+    'K_TEMPL_TOV'       =>'ID_K_TEMPL_TOV',
+    'K_TEMPL_TOV_ALG'   =>'ID_K_TEMPL_TOV_ALG',
+    'K_VAR_MISS_COMP'   =>'ID_K_VAR_MISS_COMP',
+    
 );
 
 $KARNIZ_TABLES = array(
@@ -141,7 +147,21 @@ $DELETED_TABLES = array(
     'J_TMPL_PAR_LIMIT',
     'J_TMPL_PAR_VIS_COND',
     'J_COLOR_MAP',
-    
+
+    'K_COMPATIBLE',
+    'K_COMPONENT',
+    'K_COMP_CATEG',
+    'K_COMP_OWNER',
+    'K_COMP_PROP',
+    'K_M_COMP',
+    'K_M_COMP_LINE',
+    'K_M_VARIANT',
+    'K_BRACKET',
+    'K_TEMPL',
+    'K_TEMPL_TOV',
+    'K_TEMPL_TOV_ALG',
+    'K_VAR_MISS_COMP',
+
 );
 
 ?>
