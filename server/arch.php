@@ -11,6 +11,7 @@ if(!isset($Application)){
 */
 
 use wu\server\zip\drivers\ZipStreamDriver;
+use wu\server\zip\drivers\ZipArchiveDriver;
 use wu\server\zip\Zip;
 
 require_once UNIT('utils','dir.php');
