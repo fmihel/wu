@@ -9,6 +9,10 @@ if(!isset($Application)){
     require_once UNIT('ws','ws.php');
 };
 */
+
+use wu\server\zip\drivers\ZipStreamDriver;
+use wu\server\zip\Zip;
+
 require_once UNIT('utils','dir.php');
 
 class arch{
@@ -166,12 +170,16 @@ class arch{
         $catalogPath = APP::slash(self::$path,false,true);
         $files = DIR::files($catalogPath,'xls,xlsx',false,false);
         
-        $zip = new ZipArchive;
-        if ($zip->open($file,ZipArchive::CREATE)){
+        $driver = new ZipStreamDriver();
+        $zip = new Zip($driver);
+        //$zip = new ZipArchive;
+        //if ($zip->open($file,ZipArchive::CREATE)){
+         if($zip->create($file)){   
             for($i=0;$i<count($files);$i++){
                 $from = $files[$i];
                 $to = str_replace(self::$path,'',$from);
-                $zip->addFile($from,$to);
+                //$zip->addFile($from,$to);
+                $zip->add($from,$to);
             }
             $zip->close();
         }else{

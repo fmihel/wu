@@ -13,7 +13,7 @@
 /server/node_modules/
 /server/test/
 .vscode/
-
+/server/vendor
 *.exe
 *.dcu
 *.xml

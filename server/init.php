@@ -14,6 +14,7 @@ if(!isset($Application)){
     require_once UNIT('utils','common.php');
 };
 
+require_once __DIR__.'/vendor/autoload.php';
 
 define('RESULT_KEY','<result>-1</result>');
 define('RESULT_OK','<result>1</result>');
