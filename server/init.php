@@ -53,6 +53,7 @@ require_once UNIT('utils','common.php');
 require_once './connect.php';
 require_once './update_consts.php';
 
+require_once './zip/Zip.php';
 
 
 ?>

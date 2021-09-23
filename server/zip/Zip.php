@@ -1,6 +1,8 @@
 <?php
 namespace wu\server\zip; 
-//require_once __DIR__.'/vendor/autoload.php';
+require_once __DIR__.'/drivers/ZipDriver.php';
+require_once __DIR__.'/drivers/ZipStreamDriver.php';
+
 
 /** класс интерфейс для использования различных мехаизмов упаковки */
 class Zip{
