@@ -4,7 +4,7 @@ use wu\server\zip\drivers\ZipDriver;
 
 
 /** драйвер стандартного ZipArchive (использует старый алгоритм запаковки, не поддерживается в Win10*/
-class ZipDriverArchive extends ZipDriver{
+class ZipArchiveDriver extends ZipDriver{
     private $zip;
     public function create($zipFileName,$param=[]):bool{
         parent::create($zipFileName,$param);
