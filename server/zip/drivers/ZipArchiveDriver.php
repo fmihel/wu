@@ -8,10 +8,8 @@ class ZipArchiveDriver extends ZipDriver{
     private $zip;
     public function create($zipFileName,$param=[]):bool{
         parent::create($zipFileName,$param);
-
-        $this->zipFileName = $zipFileName;
         $this->zip = new \ZipArchive;
-        return $this->zip->open($zipFileName,\ZipArchive::CREATE);
+        return ( $this->zip->open($zipFileName,\ZipArchive::CREATE)?true:false );
         
     }
 

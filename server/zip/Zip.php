@@ -7,15 +7,13 @@ require_once __DIR__.'/drivers/ZipArchiveDriver.php';
 /** класс интерфейс для использования различных мехаизмов упаковки */
 class Zip{
     private $driver;
-    private $zipFileName;
     public function __construct($driver)
     {
         $this->driver = $driver;
         
     }
-    public function create(string $file,$param=[]){
-        $this->zipFileName = $file;
-        $this->driver->create($file,$param);
+    public function create(string $file,$param=[]):bool{
+        return $this->driver->create($file,$param);
     }
 
     public function close($param=[]){
