@@ -173,21 +173,17 @@ class arch{
         
         $driver = new ZipStreamDriver();
         $zip = new Zip($driver);
-        //$zip = new ZipArchive;
-        //if ($zip->open($file,ZipArchive::CREATE)){
          if($zip->create($file)){   
             for($i=0;$i<count($files);$i++){
                 $from = $files[$i];
                 $to = str_replace(self::$path,'',$from);
-                //$zip->addFile($from,$to);
                 $zip->add($from,$to);
             }
             $zip->close();
         }else{
-            _LOGF('zip->open("'.$file.'")','error',__FILE__,__LINE__);
+            _LOGF('zip->create("'.$file.'")','error',__FILE__,__LINE__);
             return false;
         }    
-
         return true;
     }
     /**
