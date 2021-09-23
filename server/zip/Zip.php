@@ -2,7 +2,7 @@
 namespace wu\server\zip; 
 require_once __DIR__.'/drivers/ZipDriver.php';
 require_once __DIR__.'/drivers/ZipStreamDriver.php';
-
+require_once __DIR__.'/drivers/ZipArchiveDriver.php';
 
 /** класс интерфейс для использования различных мехаизмов упаковки */
 class Zip{
