@@ -83,6 +83,8 @@ $TABLE_INDEX = array(
     'K_TEMPL_TOV'       =>'ID_K_TEMPL_TOV',
     'K_TEMPL_TOV_ALG'   =>'ID_K_TEMPL_TOV_ALG',
     'K_VAR_MISS_COMP'   =>'ID_K_VAR_MISS_COMP',
+
+    'ORDERS_BLANK_TREE'   =>'ID_ORDER_BLANK_TREE',
     
 );
 
@@ -161,6 +163,7 @@ $DELETED_TABLES = array(
     'K_TEMPL_TOV',
     'K_TEMPL_TOV_ALG',
     'K_VAR_MISS_COMP',
+    'ORDERS_BLANK_TREE',
 
 );
 
