@@ -53,6 +53,34 @@ if (isset($_REQUEST['runAllTests'])){
     ORDER_TEST::runAll();
     exit;
 }
+//--------------------------------------------------------------------
+// включает выключает режим запуска тестов вконце обновления
+if (isset($_REQUEST['runOrdersTests'])){
+
+    $conf = file_get_contents('ws_conf.php');
+    $true = "'runOrdersTests'=>true,";
+    $false = "'runOrdersTests'=>false,";
+    $truePos = strpos($conf,$true);
+    $falsePos = strpos($conf,$false);
+
+    if ($_REQUEST['runOrdersTests'] == '0'){
+        if ($truePos===false && $falsePos===false){
+            $conf = str_replace('];',$false."\n];",$conf);
+        }elseif($falsePos===false){
+            $conf = str_replace($true,$false,$conf);
+        }
+        
+    }else{
+        if ($truePos===false && $falsePos===false){
+            $conf = str_replace('];',$true."\n];",$conf);
+        }elseif($truePos===false){
+            $conf = str_replace($false,$true,$conf);
+        }
+    };
+    file_put_contents('ws_conf.php',$conf);
+    $out['res'] = 1;
+    
+}
 
 //--------------------------------------------------------------------
 $catalogJsPath = __DIR__.WS_CONF::GET('catalogJsPath');
@@ -111,7 +139,14 @@ if (isset($_REQUEST['step'])){
         $out['res'] = 1;
     //--------------------------------------------------------------------
     }elseif( $step>=($ORDER_TEST_START) && $step<$ORDER_TEST_START+$ORDER_TEST_COUNT ){
-        ORDER_TEST::step($step-$COUNT_STEPS);
+        
+        if (WS_CONF::GET('runOrdersTests',true))
+            // запуск теста
+            ORDER_TEST::step($step-$COUNT_STEPS);
+        else{
+            // пересчет тестового заказа
+            ORDER_TEST::reculc(['step'=>$step-$COUNT_STEPS]);
+        } 
         $out['res'] = 1;
     };
     //--------------------------------------------------------------------

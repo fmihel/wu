@@ -1,7 +1,13 @@
 # FTP zip pack upload (Delphi) and update (PHP) tables
 Пошаговая загрузка, распаковка и обновление таблиц проекта windeco
 
-## Пример использования uploader
+[1. Пример использования uploader](#example-use-in-pascal)<br/>
+[2. Параметры setup.ini](#setup-ini)<br/>
+[3. Включить/выключить тесты во время обновления](#run-orders-tests)<br/>
+
+---
+# Пример использования uploader
+#### example-use-in-pascal 
 
 ```pascal
 Uses UWindecoUpdate;
@@ -25,7 +31,9 @@ begin
 end;
 ```
 
-## Параметры setup.ini
+---
+# Параметры setup.ini
+#### setup-init
 Все неастройки windecoUpdate вынесены в файл `windeco_update.ini`. Доступны следующие параметры
 
 |Параметр|Описание|Пример|
@@ -40,4 +48,13 @@ end;
 |FtpHost|ftp host|u4673.ftp.masterhost.ru|
 |FtpUsername|ftp user name|xxxxxx|
 |FtpPassword|ftp password|xxxxxx|
+
+---
+# Включить/выключить тесты во время обновления
+#### run-orders-tests
+Для ВКЛючения тестов,необходимо выполнить GET запрос вида:
+``` https://windeco.su/remote_access_api/wu/server/after_update.php?key=XXXX&runOrdersTests=1 ```
+Для ВЫКЛючения тестов,необходимо выполнить GET запрос вида:
+``` https://windeco.su/remote_access_api/wu/server/after_update.php?key=XXXX&runOrdersTests=0 ```
+, где ``` key=XXX ``` - ключь авторизации, его необходимо получить у администратора! 
 
