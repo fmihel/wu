@@ -52,10 +52,10 @@ end;
 ---
 # Включить/выключить тесты во время обновления
 #### run-orders-tests
-Для ВКЛючения тестов,необходимо выполнить GET запрос вида:
+Для ВКЛючения тестов,необходимо выполнить GET запрос вида:</br>
 ``` https://windeco.su/remote_access_api/wu/server/after_update.php?key=XXXX&runOrdersTests=1 ```
 <br/>
-Для ВЫКЛючения тестов,необходимо выполнить GET запрос вида:
+Для ВЫКЛючения тестов,необходимо выполнить GET запрос вида:</br>
 ``` https://windeco.su/remote_access_api/wu/server/after_update.php?key=XXXX&runOrdersTests=0 ```
 </br>
 , где ``` key=XXX ``` - ключь авторизации, его необходимо получить у администратора! 
