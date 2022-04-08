@@ -1,0 +1,12 @@
+{
+    "list":[
+        {
+            "files":[],
+            "rules":[]
+        }        
+    ],
+    "deleteFiles":[
+        "./dist/composer.*",
+        "./dist/*.json"
+    ]
+}

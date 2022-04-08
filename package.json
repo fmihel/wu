@@ -1,0 +1,30 @@
+{
+  "name": "wu",
+  "version": "0.0.1",
+  "description": "remote access",
+  "scripts": {
+    "build-and-deploy": "npm run build-dist-full && npm run deploy",
+    "build-dist": "rm -rf dist  && cp -rf ./server ./dist && rm -rf ./dist/test ./dist/vendor && cd ./dist && composer i --no-dev && cd .. && cp -rf ws_conf.remote.php ./dist/ws_conf.php && node replace ",
+    "deploy": "node deploy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fmihel/wu.git"
+  },
+  "keywords": [
+    "javascript",
+    "bootstrap",
+    "js",
+    "config"
+  ],
+  "author": "fmihel76@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fmihel/wu/issues"
+  },
+  "homepage": "https://github.com/fmihel/wu#readme",
+  "devDependencies": {
+    "ftp-deploy": "^2.4.1"
+  },
+  "dependencies": {}
+}

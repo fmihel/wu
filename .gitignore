@@ -45,3 +45,7 @@
 *.log
 
 workspace.code-workspace
+ftp.config.js
+node_modules/
+dist/
+ws_conf.remote.php
