@@ -14,6 +14,8 @@ if(!isset($Application)){
     require_once UNIT('utils','common.php');
 };
 
+ini_set('memory_limit', '128M');
+
 require_once __DIR__.'/vendor/autoload.php';
 
 define('RESULT_KEY','<result>-1</result>');
