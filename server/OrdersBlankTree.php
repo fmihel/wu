@@ -8,7 +8,8 @@ class OrdersBlankTree{
         
         $out = '';
         //--------------------------------------------------------------
-        $q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = 0 and DEBUG_MODE<>1 ORDER BY NOM_PP';
+        //$q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = 0 and DEBUG_MODE<>1 ORDER BY NOM_PP';
+        $q = 'SELECT * from ORDERS_BLANK_TREE where ID_PARENT = 0 ORDER BY NOM_PP';
         $ds = base::ds($q,'deco','utf8');
         if ($ds){
             while($row = base::read($ds)){
@@ -38,8 +39,8 @@ class OrdersBlankTree{
     }
     private static function child($ID_ORDER_BLANK_TREE):string{
         $out = '';
-
-        $q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = '.$ID_ORDER_BLANK_TREE.'  and DEBUG_MODE<>1 ORDER BY NOM_PP';
+        $q = 'SELECT * from ORDERS_BLANK_TREE where ID_PARENT = '.$ID_ORDER_BLANK_TREE.' ORDER BY NOM_PP';
+        //$q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = '.$ID_ORDER_BLANK_TREE.'  and DEBUG_MODE<>1 ORDER BY NOM_PP';
         $ds = base::ds($q,'deco','utf8');
         if ($ds){
             while($row = base::read($ds)){

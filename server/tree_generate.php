@@ -135,6 +135,8 @@ class TREE_GENERATE{
         $out['caption']    =   self::stringCorrect($node['CAPTION']);
         $out['icon']       =   $ICONS[$node['ICON_IND']];
         $out['SRCE_KIND']  =   $node['SRCE_KIND'];
+        $out['ID_ORDER_BLANK_TREE']  =   $node['ID_ORDER_BLANK_TREE'];
+        //$out['orders']=self::getOrderInfo($node['ID_ORDER_BLANK_TREE']);
         
         $out['hash']       =   self::translit($parent,$node);
                 
@@ -368,10 +370,15 @@ class TREE_GENERATE{
     }
     
     private static function translit($pref,$node){
+        
+        return $pref.($pref!==''?"/":"").self::_translit($node['CAPTION']);
+    }
+
+    private static function _translit($str):string{
         global $RUS_BUK;
         global $ENG_BUK;
 
-        $out = trim(mb_strtolower($node['CAPTION']));
+        $out = trim(mb_strtolower($str));
         while(strpos($out,'  ')!==false)
             $out = str_replace(['  '],[' '],$out);
 
@@ -379,7 +386,36 @@ class TREE_GENERATE{
         $out = preg_replace('/[^a-zA-Zа-яА-Я0-9\_]/ui', '',$out);
         $out = str_replace($RUS_BUK,$ENG_BUK,$out);
         
-        return $pref.($pref!==''?"/":"").$out;
+        return $out;
+    }
+    /** можно использовать для записи информации о вариантых заказов в узле...пока без нее обхожусь */
+    private static function getOrderInfo($ID_ORDER_BLANK_TREE){
+        $out = [];
+        if ($ID_ORDER_BLANK_TREE>0){
+            $q='SELECT * 
+                from 
+                    ORDERS_BLANK_TREE obt 
+                    join 
+                    ORDERS_KINDS ok on obt.ID_ORDER_KIND=ok.ID_ORDER_KIND 
+                where 
+                    obt.ID_ORDER_BLANK_TREE='.$ID_ORDER_BLANK_TREE;
+
+            $row = base::row($q,'deco','UTF8');
+            //$caption = $row['NAME_FULL'].'/'.$row['CAPTION'];
+            $kind = $row['ID_ORDER_KIND'];
+
+            $id = 1;
+            if ($row['ID_B_BLANK']>0)
+                $out[]=['id'=>$id,'caption'=>'Вручную (бланк)','ID_B_BLANK'=>$row['ID_B_BLANK'],'type'=>'blank','kind'=>$kind];
+            $id++;
+            if ($row['ID_J_TMPL']>0)
+                $out[]=['id'=>$id,'caption'=>'Автоматически','ID_J_TMPL'=>$row['ID_J_TMPL'],'type'=>'auto','kind'=>$kind];
+            $id++;
+            if ($row['ID_K_TEMPL']>0)
+                $out[]=['id'=>$id,'caption'=>'Автоматически','ID_K_TEMPL'=>$row['ID_K_TEMPL'],'type'=>'auto','kind'=>$kind];
+
+        }
+        return $out;
     }
 }
 ?>
