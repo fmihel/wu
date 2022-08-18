@@ -189,6 +189,7 @@ type
         fScriptList: string;
         fScriptUnpack: string;
         fScriptUpdate: string;
+        fScriptVideo: string;
         fSetupFileName: string;
         fTables: TStringList;
         fTmpFolder: string;
@@ -219,6 +220,8 @@ type
         function Unpack: TWindecoUpdateResult;
         function Update: TWindecoUpdateResult;
         function Upload: TWindecoUpdateResult;
+        function UploadVideo(const aFileName: string; const ID_C_MEDIA_FILE:
+            Integer; const aToPath: string = ''): Integer;
         property AfterUpdateScript: string read fAfterUpdateScript write
             fAfterUpdateScript;
         {:
@@ -237,6 +240,7 @@ type
         property ScriptList: string read fScriptList write fScriptList;
         property ScriptUnpack: string read fScriptUnpack write fScriptUnpack;
         property ScriptUpdate: string read fScriptUpdate write fScriptUpdate;
+        property ScriptVideo: string read fScriptVideo write fScriptVideo;
         property SetupFileName: string read fSetupFileName write fSetupFileName;
         property Tables: TStringList read fTables write fTables;
         property TmpFolder: string read fTmpFolder write fTmpFolder;
@@ -700,6 +704,7 @@ begin
         fScriptEnd    :=getStr('ScriptEnd','https://windeco.su/admin/modules/update/remote/clear.php');
         fScriptList   :=getStr('ScriptList','https://windeco.su/admin/modules/update/remote/list.php');
         fAfterUpdateScript   :=getStr('AfterUpdateScript','https://windeco.su/admin/modules/update/remote/after_update.php');
+        fScriptVideo   :=getStr('ScriptVideo','https://windeco.su/remote_access_api/wu/server/video.php');
 
         result:=true;
     except
@@ -874,6 +879,7 @@ begin
     end;
 
 end;
+
 function TWindecoUpdate.tabAdd(aTable: string): TWindecoTable;
 var
     item: TWindecoTable;
@@ -968,7 +974,6 @@ begin
     result:=wurFtpUpload;
 
     ftp:=self.ftpCreate();
-    {$ifdef _log_} SLog.Stack(ClassName,cFuncName);{$endif}
     try
     try
         ftp.Connect;
@@ -990,6 +995,53 @@ begin
         self.ftpDestroy(ftp);
     end;
     progress('Upload',2,6,'',0,0,0,0,result);
+end;
+
+function TWindecoUpdate.UploadVideo(const aFileName: string; const
+    ID_C_MEDIA_FILE: Integer; const aToPath: string = ''): Integer;
+var
+    ftp: TIdFTP;
+    cRes: TWindecoUpdateResult;
+    cStrRes: string;
+    cUrl: string;
+    cFileName: string;
+begin
+        result:=0;
+        cFileName := SysUtils.ExtractFileName(aFileName);
+
+        ftp:=self.ftpCreate();
+        try
+        try
+            // копируем на сервер
+            ftp.Connect;
+            if not ftp.Connected then begin
+                result:=2;
+                raise Exception.Create('wurFtpConnect');
+            end;
+
+            ftp.Put(aFileName,cFileName);
+
+
+            // регистрируем файл на сервере
+            cUrl:=self.ScriptVideo+'?key='+self.Key+'&reg'+'&path='+aToPath+'&file='+cFileName+'&ID_C_MEDIA_FILE='+IntToStr(ID_C_MEDIA_FILE);
+            if (WINDECO_UTILS.HTTP_GET(cUrl,cStrRes)) then begin
+                cRes:=WINDECO_UTILS.HTTP_TO_WUR(cStrRes);
+                if (cRes<>wurOk) then begin
+                    result:=2;
+                    raise Exception.Create('GET '+cUrl+' '+TWindecoUpdateResultStr[integer(cRes)]);
+                end;
+            end;
+
+
+        except
+        on e:Exception do
+        begin
+            OutputDebugString(PChar(e.Message));
+        end;
+        end;
+        finally
+            self.ftpDestroy(ftp);
+        end;
 end;
 
 

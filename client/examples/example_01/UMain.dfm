@@ -1,6 +1,6 @@
 object frmMain: TfrmMain
-  Left = 2720
-  Top = 420
+  Left = 800
+  Top = 405
   BorderStyle = bsDialog
   Caption = 'example Windeco Update'
   ClientHeight = 489
@@ -84,9 +84,17 @@ object frmMain: TfrmMain
     TabOrder = 4
     OnClick = Button2Click
   end
+  object Button3: TButton
+    Left = 423
+    Top = 52
+    Width = 177
+    Height = 46
+    Action = actUploadVideo
+    TabOrder = 5
+  end
   object ActionList1: TActionList
-    Left = 532
-    Top = 67
+    Left = 444
+    Top = 123
     object actRun: TAction
       Caption = #1047#1072#1087#1091#1089#1090#1080#1090#1100
       OnExecute = actRunExecute
@@ -95,10 +103,19 @@ object frmMain: TfrmMain
       Caption = #1055#1088#1077#1088#1074#1072#1090#1100
       OnExecute = actStopExecute
     end
+    object actUploadVideo: TAction
+      Caption = #1047#1072#1075#1088#1091#1079#1082#1072' '#1074#1080#1076#1077#1086
+      OnExecute = actUploadVideoExecute
+    end
   end
   object OpenDialog1: TOpenDialog
     Filter = 'zip|*.zip'
-    Left = 456
-    Top = 64
+    Left = 344
+    Top = 120
+  end
+  object OpenDialog2: TOpenDialog
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Left = 344
+    Top = 192
   end
 end

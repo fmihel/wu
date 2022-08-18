@@ -19,8 +19,12 @@ type
     actStop: TAction;
     Button2: TButton;
     OpenDialog1: TOpenDialog;
+    actUploadVideo: TAction;
+    Button3: TButton;
+    OpenDialog2: TOpenDialog;
     procedure actRunExecute(Sender: TObject);
     procedure actStopExecute(Sender: TObject);
+    procedure actUploadVideoExecute(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -94,6 +98,33 @@ end;
 procedure TfrmMain.actStopExecute(Sender: TObject);
 begin
  fStop:=true;
+end;
+
+procedure TfrmMain.actUploadVideoExecute(Sender: TObject);
+var
+  windeco:TWindecoUpdate;
+  cFileName:string;
+  ID_C_MEDIA_FILE:integer;
+  cToPath:string;
+  cRes:integer;
+begin
+
+    windeco:=TWindecoUpdate.Create();
+    try
+        if OpenDialog2.Execute() then begin
+
+            cFileName:=OpenDialog2.FileName;
+            ID_C_MEDIA_FILE:=1;
+            cToPath:='path1/path2';
+            cRes:=windeco.UploadVideo(cFileName,ID_C_MEDIA_FILE,cToPath);
+
+            log('Загрузка видео завершенаЮ код:'+IntToStr(cRes));
+        end;
+
+    finally
+        windeco.Free();
+
+    end;
 end;
 
 procedure TfrmMain.Button2Click(Sender: TObject);
