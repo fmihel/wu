@@ -113,12 +113,22 @@ begin
     try
         if OpenDialog2.Execute() then begin
 
+            { путь к файлу на локальном диске }
             cFileName:=OpenDialog2.FileName;
+
+            { идентификатор в таблице C_MEDIA_FILE, если такой записи не существует, она будет создана }
             ID_C_MEDIA_FILE:=1;
-            cToPath:='path1/path2';
+
+            { папка, в котрой будет лежать отправляемый файл на сервере, }
+            cToPath:='';
+
+            {отправка файла, результат:
+                0       - все нормально
+                1,2,..  - ошибка
+            }
             cRes:=windeco.UploadVideo(cFileName,ID_C_MEDIA_FILE,cToPath);
 
-            log('Загрузка видео завершенаЮ код:'+IntToStr(cRes));
+            log('Загрузка видео завершена, код:'+IntToStr(cRes));
         end;
 
     finally

@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fmihel/php-lib.git",
-                "reference": "6c8eb8fef8ecfc8aebac167840cc1d3bef73a5e7"
+                "reference": "59511992c4f1caeb34f721749bf5c2f61be532cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fmihel/php-lib/zipball/6c8eb8fef8ecfc8aebac167840cc1d3bef73a5e7",
-                "reference": "6c8eb8fef8ecfc8aebac167840cc1d3bef73a5e7",
+                "url": "https://api.github.com/repos/fmihel/php-lib/zipball/59511992c4f1caeb34f721749bf5c2f61be532cb",
+                "reference": "59511992c4f1caeb34f721749bf5c2f61be532cb",
                 "shasum": ""
             },
             "require-dev": {
@@ -44,9 +44,9 @@
             "description": "php,lib,library",
             "support": {
                 "issues": "https://github.com/fmihel/php-lib/issues",
-                "source": "https://github.com/fmihel/php-lib/tree/master"
+                "source": "https://github.com/fmihel/php-lib/tree/v3.5.0"
             },
-            "time": "2022-08-18T06:12:29+00:00"
+            "time": "2022-08-18T12:35:41+00:00"
         },
         {
             "name": "maennchen/zipstream-php",

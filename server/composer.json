@@ -1,6 +1,6 @@
 {
     "require": {
         "maennchen/zipstream-php": "^2.1",
-        "fmihel/php-lib": "dev-master"
+        "fmihel/php-lib": "^3.6"
     }
 }
