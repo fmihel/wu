@@ -49,7 +49,7 @@ end;
 |FtpHost|ftp host|u4673.ftp.masterhost.ru|
 |FtpUsername|ftp user name|xxxxxx|
 |FtpPassword|ftp password|xxxxxx|
-|ScripVideo|адрес скритпа обработчика для загружаемых video|https://windeco.su/remote_access_api/wu/server/video.php|
+|ScriptVideo|адрес скритпа обработчика для загружаемых video|https://windeco.su/remote_access_api/wu/server/video.php|
 
 ---
 # Включить/выключить тесты во время обновления
