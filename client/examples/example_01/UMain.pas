@@ -20,8 +20,13 @@ type
     Button2: TButton;
     OpenDialog1: TOpenDialog;
     actUploadVideo: TAction;
-    Button3: TButton;
     OpenDialog2: TOpenDialog;
+    GroupBox1: TGroupBox;
+    Button3: TButton;
+    Label2: TLabel;
+    Edit1: TEdit;
+    Label3: TLabel;
+    Edit3: TEdit;
     procedure actRunExecute(Sender: TObject);
     procedure actStopExecute(Sender: TObject);
     procedure actUploadVideoExecute(Sender: TObject);
@@ -117,10 +122,10 @@ begin
             cFileName:=OpenDialog2.FileName;
 
             { идентификатор в таблице C_MEDIA_FILE, если такой записи не существует, она будет создана }
-            ID_C_MEDIA_FILE:=1;
+            ID_C_MEDIA_FILE:=StrToInt(Edit3.Text);
 
             { папка, в котрой будет лежать отправляемый файл на сервере, }
-            cToPath:='';
+            cToPath:=Edit1.Text;
 
             {отправка файла, результат:
                 0       - все нормально

@@ -37,6 +37,8 @@ define('UNPACK_ZIP_PATH',WS_CONF::GET('UNPACK_ZIP_PATH'));
 // путь куда сохраняются файлы созданные из блоб
 //define('BIN_STORY_PATH','../../../../media/');
 define('BIN_STORY_PATH',WS_CONF::GET('BIN_STORY_PATH'));
+// папка с видео
+define('HTTP_VIDEO',WS_CONF::GET('videoUrl'));
 
 //_LOGF($Application->REQUEST,'$Application->REQUEST',__FILE__,__LINE__);
     

@@ -200,6 +200,7 @@ class TREE_GENERATE{
         $view     = [];
         $download = [];
         $print    = [];
+        $video    = [];
         
         $q = "
             select 
@@ -232,7 +233,10 @@ class TREE_GENERATE{
                     $download[] = $row;
                 elseif ($PROCESSING_KIND == 3)
                     $print[] =$row;                    
-                    
+                elseif ($PROCESSING_KIND == 4){
+                    $row['PATH_WWW'] = HTTP_VIDEO.$row['PATH_WWW'];
+                    $video[] =$row;                               
+                }
             }
         }else{
             //_LOG("Error [$q]",__FILE__,__LINE__);
@@ -246,6 +250,9 @@ class TREE_GENERATE{
             
         if (count($print)>0)
             $out['print'] = $print;
+        
+        if (count($video)>0)
+            $out['video'] = $video;
         
         return $out;            
     }
@@ -293,7 +300,9 @@ class TREE_GENERATE{
         
         if ($SHOW_AS==2)
             return 'gallery';
-        
+
+        if ($SHOW_AS==3)
+            return 'video';
         return '';
         
     }

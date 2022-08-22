@@ -1012,6 +1012,16 @@ begin
         ftp:=self.ftpCreate();
         try
         try
+            cUrl:=self.ScriptVideo+'?key='+self.Key+'&exists'+'&ID_C_MEDIA_FILE='+IntToStr(ID_C_MEDIA_FILE);
+            if (WINDECO_UTILS.HTTP_GET(cUrl,cStrRes)) then begin
+                cRes:=WINDECO_UTILS.HTTP_TO_WUR(cStrRes);
+                if (cRes<>wurOk) then begin
+                    result:=1;
+                    raise Exception.Create('GET '+cUrl+' '+TWindecoUpdateResultStr[integer(cRes)]);
+                end;
+            end;
+
+
             // копируем на сервер
             ftp.Connect;
             if not ftp.Connected then begin
