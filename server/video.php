@@ -14,8 +14,9 @@ try{
     /** проверка существования записи */
     if (Common::issets($_REQUEST,'exists','ID_C_MEDIA_FILE')){
         
+        $ID_C_MEDIA_FILE = $_REQUEST['ID_C_MEDIA_FILE'];
         $q = "select count(ID_C_MEDIA_FILE) cnt from C_MEDIA_FILE where ID_C_MEDIA_FILE = $ID_C_MEDIA_FILE";
-        $cnt = base::value($q,'cnt',0,'base');
+        $cnt = base::value($q,'cnt',0,'deco');
         echo $cnt>0 ? RESULT_OK : RESULT_ERROR;
         exit;
         
@@ -25,8 +26,8 @@ try{
         
         if ($ID_C_MEDIA_FILE>0){
             $q = "select count(ID_C_MEDIA_FILE) cnt from C_MEDIA_FILE where ID_C_MEDIA_FILE = $ID_C_MEDIA_FILE";
-            $cnt = base::value($q,'cnt',0,'base');
-            if (base::value($q,'cnt',0,'base')==0)
+            $cnt = base::value($q,'cnt',0,'deco');
+            if (base::value($q,'cnt',0,'deco')==0)
                 throw new \Exception('not exists ID_C_MEDIA_FILE = '.$ID_C_MEDIA_FILE);
         };
         

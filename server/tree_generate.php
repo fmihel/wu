@@ -9,6 +9,9 @@ SRCE_KIND = 9 :    SRCE_ID соотвествует  ID_TX_SET из TX_SET
 SRCE_KIND = 10 :   SRCE_ID соотвествует  ID из J_FOLDER
 SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
 */
+
+use fmihel\lib\Dir;
+
 $SRCE_KIND = array(
     /* 0*/array('table'=>'','field'=>'SRCE_ID','media_kind'=>0),
     /* 1*/array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER','is_chapter'=>true,'media_kind'=>1),
@@ -225,17 +228,19 @@ class TREE_GENERATE{
                 if ($PROCESSING_KIND!==$row['PROCESSING_KIND'])
                     $PROCESSING_KIND = $row['PROCESSING_KIND'];
                 
-                $row['PATH_WWW'] = HTTP_MEDIA.$row['PATH_WWW'];
+                //$row['PATH_WWW'] = HTTP_MEDIA.$row['PATH_WWW'];
 
                 if ($PROCESSING_KIND == 1)
-                    $view[] = $row['PATH_WWW'];
-                elseif ($PROCESSING_KIND == 2)
+                    $view[] = Dir::join([HTTP_MEDIA,$row['PATH_WWW']]);
+                elseif ($PROCESSING_KIND == 2){
+                    $row['PATH_WWW'] = Dir::join([HTTP_MEDIA,$row['PATH_WWW']]);
                     $download[] = $row;
-                elseif ($PROCESSING_KIND == 3)
-                    $print[] =$row;                    
-                elseif ($PROCESSING_KIND == 4){
-                    $row['PATH_WWW'] = HTTP_VIDEO.$row['PATH_WWW'];
-                    $video[] =$row;                               
+                }elseif ($PROCESSING_KIND == 3){
+                    $row['PATH_WWW'] = Dir::join([HTTP_MEDIA,$row['PATH_WWW']]);
+                    $print[] = $row;                    
+                }elseif ($PROCESSING_KIND == 4){
+                    $row['PATH_WWW'] = Dir::join([HTTP_VIDEO,$row['PATH_WWW']]);
+                    $video[] = $row;                               
                 }
             }
         }else{

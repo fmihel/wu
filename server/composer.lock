@@ -4,27 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "09a5461dd0fdb692b726f0ac969dbcfe",
+    "content-hash": "dfe1ef7a9a1d0250273ca641d1f70a1f",
     "packages": [
         {
             "name": "fmihel/php-lib",
-            "version": "dev-master",
+            "version": "v3.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fmihel/php-lib.git",
-                "reference": "59511992c4f1caeb34f721749bf5c2f61be532cb"
+                "reference": "a7d07479038917b17500b1fc3624b1c921e5106b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fmihel/php-lib/zipball/59511992c4f1caeb34f721749bf5c2f61be532cb",
-                "reference": "59511992c4f1caeb34f721749bf5c2f61be532cb",
+                "url": "https://api.github.com/repos/fmihel/php-lib/zipball/a7d07479038917b17500b1fc3624b1c921e5106b",
+                "reference": "a7d07479038917b17500b1fc3624b1c921e5106b",
                 "shasum": ""
             },
             "require-dev": {
                 "fmihel/console-log": "*",
                 "phpunit/phpunit": "8.5.23"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -44,9 +43,9 @@
             "description": "php,lib,library",
             "support": {
                 "issues": "https://github.com/fmihel/php-lib/issues",
-                "source": "https://github.com/fmihel/php-lib/tree/v3.5.0"
+                "source": "https://github.com/fmihel/php-lib/tree/v3.6.1"
             },
-            "time": "2022-08-18T12:35:41+00:00"
+            "time": "2022-08-23T12:30:07+00:00"
         },
         {
             "name": "maennchen/zipstream-php",
@@ -319,9 +318,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "fmihel/php-lib": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
