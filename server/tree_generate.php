@@ -162,7 +162,10 @@ class TREE_GENERATE{
             $child[]=self::_create($row,$out['hash']);
         }
         
-        if ($node['SRCE_KIND']==0){
+        if (isset($out['media']['video'])){
+            if (count($child)===0)
+                $out['viewAs']='video';      
+        }elseif ($node['SRCE_KIND']==0){
             if (count($child)===0)
                 $out['viewAs']='gallery';      
         }else if (($node['SRCE_KIND']==1)||($node['SRCE_KIND']==2)||($node['SRCE_KIND']==6)||($node['SRCE_KIND']==7)){
