@@ -73,6 +73,12 @@ $ICONS = array(
     'grid_electro',//20
     
     'model_tkani',//21
+    '',//22
+    'video_karniz', //23
+    'video_tkani',//24
+    'video_jaluzi',//25
+    'video_elektro',//26
+
 
 );
 
