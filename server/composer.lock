@@ -4,8 +4,48 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dfe1ef7a9a1d0250273ca641d1f70a1f",
+    "content-hash": "26e2e08126f8328be17ac901ad669828",
     "packages": [
+        {
+            "name": "fmihel/console-log",
+            "version": "v1.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fmihel/console-log.git",
+                "reference": "a1fa354c8a44618f3d7dde5e54097fd69b0c1470"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fmihel/console-log/zipball/a1fa354c8a44618f3d7dde5e54097fd69b0c1470",
+                "reference": "a1fa354c8a44618f3d7dde5e54097fd69b0c1470",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "fmihel\\": "source"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "fmihel",
+                    "email": "fmihel76@gmail.com"
+                }
+            ],
+            "description": "error,log,console,php,javascript,js,error_log,console.log,console.info",
+            "support": {
+                "issues": "https://github.com/fmihel/console-log/issues",
+                "source": "https://github.com/fmihel/console-log/tree/v1.4.1"
+            },
+            "time": "2022-04-01T11:18:00+00:00"
+        },
         {
             "name": "fmihel/php-lib",
             "version": "v3.6.1",

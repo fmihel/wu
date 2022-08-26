@@ -21,12 +21,13 @@ require_once 'tree_generate.php';
 require_once 'arch.php';
 require_once 'order_test.php';
 require_once 'OrdersBlankTree.php';
+require_once 'video_utils.php';
 
 $out = array('res'=>0);
 
 //--------------------------------------------------------------------
 // кол-во шагов
-$COUNT_STEPS = 6; 
+$COUNT_STEPS = 7; 
 $ORDER_TEST_START = $COUNT_STEPS;
 $ORDER_TEST_COUNT = ORDER_TEST::count();
 //--------------------------------------------------------------------
@@ -140,6 +141,10 @@ if (isset($_REQUEST['step'])){
     }elseif($step == 5){
         // перестройка дерева шаблонов - заказов
         OrdersBlankTree::update();
+        $out['res'] = 1;
+    }elseif($step == 6){
+        // удаление неиспользуемых видео
+        video_utils::clear();
         $out['res'] = 1;
     }elseif( $step>=($ORDER_TEST_START) && $step<$ORDER_TEST_START+$ORDER_TEST_COUNT ){
         
