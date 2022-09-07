@@ -62,7 +62,7 @@ try{
         $ch = curl_init($reCreateCatalogJsUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $str = curl_exec($ch);
-        error_log('call '.$reCreateCatalogJsUrl.' res='.$str);
+        //error_log('call '.$reCreateCatalogJsUrl.' res='.$str);
         curl_close($ch);
 
         //------------------------------------------------------
