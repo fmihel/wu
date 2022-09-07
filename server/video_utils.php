@@ -21,7 +21,7 @@ class video_utils{
 
             foreach($exists as $file){
 
-                $file = str_replace($path,'',$file); // файл имеет относительный путь, относительно текущей папки, поэтому удаляем из пути $path 
+                $file = Dir::slash(str_replace($path,'',$file),false,false); // файл имеет относительный путь, относительно текущей папки, поэтому удаляем из пути $path 
                 
                 // поиск файла в существующем списке
                 $search = false;
@@ -35,10 +35,13 @@ class video_utils{
 
                 // если файл не найден в таблице, его удаляем
                 if (!$search){
+
                     $file = Dir::join([$videoPath,$file],'unix');
                     if (!@unlink($file)){
                         console::error('delete ',$file);
-                    }
+                    }else{
+                        console::log('delete ',$file);
+                    };
                 };
                 
             }

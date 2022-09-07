@@ -695,12 +695,13 @@ class UPDATE_UTILS  {
                         $mean = $VALUES[$name];
                         
                         if ($name===$FILENAME){
-                            $file = BIN_STORY_PATH.APP::slash(str_replace("\\",'/',$mean),false,false);
-                        
-                            $ext = APP::ext($file);
-                            $path = APP::get_path($file);
-                            $file = $path.APP::without_ext($file).'_'.$VALUES[$INDEX_NAME].'.'.$ext;
-                            $mean = str_replace(BIN_STORY_PATH,'',$file);
+                            if (trim($mean)!==''){
+                                $file = BIN_STORY_PATH.APP::slash(str_replace("\\",'/',$mean),false,false);
+                                $ext  = APP::ext($file);
+                                $path = APP::get_path($file);
+                                $file = $path.APP::without_ext($file).'_'.$VALUES[$INDEX_NAME].'.'.$ext;
+                                $mean = str_replace(BIN_STORY_PATH,'',$file);
+                            }
                         };
                         
                         $mean = UPDATE_UTILS::mean_by_type($mean,$bdr->info[$k]['TYPE']);
@@ -719,6 +720,7 @@ class UPDATE_UTILS  {
                 
             };//for
             
+            // -----------------------------------------------------------------------------------
             $q = 'insert into '.$TABLE.' ('.$fld.') values ('.$insert.') on duplicate key update '.$update ;
             // -----------------------------------------------------------------------------------
             
@@ -726,16 +728,11 @@ class UPDATE_UTILS  {
                 _LOG(base::error('deco').' ['.$q.']',__FILE__,__LINE__);                
                 $res = 0;
             }else{
-                if (!$file){
-                    _LOG('undefined file ['.$VALUES[$FILENAME].']',__FILE__,__LINE__);
-                    $res = 0;
-                }else{    
-                
+                if ($file){
                     if (($path!=='')&&(!file_exists($path))&&(!mkdir($path, 0777, true))){
                         _LOG('Error create path ['.$path.']',__FILE__,__LINE__);
                         $res = 0;
                     }else{
-    
                         if (!self::saveBinToFile($VALUES['CONTENT'],$file)){
                             $res = 0;
                             _LOG($file.' story error',__FILE__,__LINE__);
@@ -743,7 +740,6 @@ class UPDATE_UTILS  {
                     }
                 }
             };
-            
 
             $count_recs--;
             $str = $bdr->gets();
