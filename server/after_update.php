@@ -117,7 +117,7 @@ if (isset($_REQUEST['step'])){
     //--------------------------------------------------------------------
     }elseif($step == 3){
         try{
-            TREE_GENERATE::create($catalogJsPath.'/catalog_new.js');
+            TREE_GENERATE::create($catalogJsPath.'/catalog_new.js',$catalogJsPath.'/full_tree_catalog.php');
         }catch(Exception $e){
         }
         $out['res'] = 1;

@@ -88,10 +88,10 @@ $ENG_BUK = ['a','b','v','g','d','e','e','g','z','i','i','k','l','m','n','o','p',
 class TREE_GENERATE{
     private static $coding = 'utf8';
 
-    public static function create($saveToFile = false){
+    public static function create($saveToFile = false,$saveToPhp = false){
         try{
             $out = [];
-            
+
             $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
             $ds = base::dsE($q,'deco',self::$coding);
             
@@ -110,6 +110,10 @@ class TREE_GENERATE{
                 'hash'=>'main'
             
             ];  
+
+            if ($saveToPhp){
+                file_put_contents($saveToPhp,'<?php const FULL_TREE_CATALOG = ['.self::jsToPhp($out).'];');
+            }
             
             if ($saveToFile){
             
@@ -439,6 +443,36 @@ class TREE_GENERATE{
 
         }
         return $out;
+    }
+
+    private static function _typing($value){
+        if (is_numeric($value))
+            return $value;
+        
+            if ($value === 'true' || $value === 'false')
+            return $value;
+
+        return '"'.$value.'"';
+    }
+    private static function jsToPhp(array $js,$cr = "\n",$level=0 ){
+        $php = '';
+        $gap = '  ';
+        $off = str_repeat($gap,$level);
+
+        foreach($js as $key=>$value){
+            $type = gettype($value);
+            if ($type === 'array'){
+                $childs = self::jsToPhp($value,$cr,$level+1);
+                if ($childs!==''){
+                    $php.=$off.'"'.$key.'"=>['.$cr.$childs.$off.'],'.$cr;
+                }
+            }else{
+                $php.=$off.'"'.$key.'"=>'.self::_typing($value).','.$cr;
+            }
+
+        }
+        //error_log(print_r($js,true));
+        return $php;
     }
 }
 ?>
