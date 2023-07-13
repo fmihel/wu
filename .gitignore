@@ -49,3 +49,4 @@ ftp.config.js
 node_modules/
 dist/
 ws_conf.remote.php
+config.remote.php
