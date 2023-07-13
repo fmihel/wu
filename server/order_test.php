@@ -8,10 +8,11 @@ use fmihel\config\Config;
 //-------------------------------
 /** куда отправлять, если ошибка (пока в заказе жалюзи) */
 //WS_CONF::DEF('emails-for-system-report',['fmihel76@gmail.com']);
-WS_CONF::DEF('emails-for-system-report', []);
+
+Config::define('emails-for-system-report', []);
 //-------------------------------
 /** подключение доп модулей */
-WS_CONF::DEF('require_order_test', [
+Config::define('require_order_test', [
     '../../dev/source/common/order_const.php',
     '../../dev/source/tables/tables.php',
     '../../dev/source/common/common.php',

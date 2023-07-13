@@ -1,4 +1,5 @@
 <?php
+namespace wu;
 
 /**
  * данный модуль выполняет скрипты после обновления.
@@ -14,13 +15,13 @@
 
 require_once 'init.php';
 
-require_once 'createTree.php';
-require_once 'createTreeFull.php';
-require_once 'tree_generate.php';
-require_once 'arch.php';
-require_once 'order_test.php';
-require_once 'OrdersBlankTree.php';
-require_once 'video_utils.php';
+require_once __DIR__ . '/utils/CreateTree.php';
+require_once __DIR__ . '/utils/createTreeFull.php';
+require_once __DIR__ . '/utils/tree_generate.php';
+require_once __DIR__ . '/utils/arch.php';
+require_once __DIR__ . '/order_test.php';
+require_once __DIR__ . '/OrdersBlankTree.php';
+require_once __DIR__ . '/utils/video_utils.php';
 
 use fmihel\config\Config;
 
@@ -123,7 +124,7 @@ if (isset($_REQUEST['step'])) {
     } elseif ($step == 3) {
         try {
             TREE_GENERATE::create($catalogJsPath . '/catalog_new.js', $catalogJsPath . '/full_tree_catalog.php');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
         $out['res'] = 1;
         //--------------------------------------------------------------------

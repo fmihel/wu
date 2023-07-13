@@ -1,4 +1,12 @@
 <?php
+namespace wu\utils;
+
+require_once __DIR__ . '/CreateTreeFull.php';
+
+use fmihel\base\Base;
+use fmihel\console;
+use fmihel\lib\Common;
+
 /*
 SRCE_KIND = 1 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
 SRCE_KIND = 2 :    SRCE_ID соотвествует ID_K_MODEL из K_MODEL
@@ -10,7 +18,7 @@ SRCE_KIND = 10 :   SRCE_ID соотвествует  ID из J_FOLDER
 SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
  */
 
-$SRCE_KIND = array(
+const SRCE_KIND = [
     array('table' => '', 'field' => 'SRCE_ID'), //0
     array('table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 2), //1
     array('table' => 'K_MODEL', 'field' => 'ID_K_MODEL', 'is_chapter' => false, 'media_kind' => 1), //2
@@ -24,7 +32,7 @@ $SRCE_KIND = array(
     array('table' => 'J_FOLDER', 'field' => 'ID', 'media_kind' => 3), //10
     array('table' => 'J_SET', 'field' => 'ID', 'media_kind' => 3), //11
 
-);
+];
 /*
 Иконки узлов
 0-Карнизы корень
@@ -45,7 +53,7 @@ $SRCE_KIND = array(
 15-Жалюзи сетка
  */
 
-$ICONS = array(
+const ICONS = [
     'root_karniz', //0
     'folder_karniz', //1
     'root_tkani', //2
@@ -71,11 +79,11 @@ $ICONS = array(
 
     'model_tkani', //21
 
-);
+];
 
-define('SRCE_MODEL', 2);
+const SRCE_MODEL = 2;
 
-class CREATE_TREE_UTILS
+class CreateTree
 {
 
     public static function SAVE_ALL($path = false)
@@ -85,12 +93,13 @@ class CREATE_TREE_UTILS
             $path = __DIR__;
         }
 
-        $catalog = array();
+        $catalog = [];
         $q = 'select * from CTLG_SUBSET where ARCH<>1';
-        $ds = base::ds($q, 'deco');
+
+        $ds = Base::ds($q, 'deco');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $data = self::GENERATE($row['ID_CTLG_SUBSET']);
                 $data = $data['data'];
@@ -111,25 +120,20 @@ class CREATE_TREE_UTILS
             $catalog['karniz'] = array('data' => $karniz['data']);
 
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         $file = $path . '/catalog.js';
 
-        $json = ARR::to_json($catalog);
+        $json = Compatible::Arr_to_json($catalog);
         file_put_contents($file, 'var catalog=' . $json . ';');
 
-        $full = CREATE_FULL_TREE_UTILS::GENERATE();
+        $full = CreateTreeFull::GENERATE();
         $file = $path . '/full_catalog.js';
-        $json = ARR::to_json($full['data']);
+        $json = Compatible::Arr_to_json($full['data']);
         file_put_contents($file, 'var full_catalog=' . $json . ';');
 
-        /*
-        $file = __DIR__.'/catalog_tree.php';
-        $php = ARR::to_php_code($catalog,true);
-        file_put_contents($file,'<?php $CATALOG_TREE='.$php.'; ?>');
-         */
-        return array('res' => 1);
+        return ['res' => 1];
 
     }
 
@@ -139,11 +143,11 @@ class CREATE_TREE_UTILS
         $content = file_get_contents($file);
 
         $json = mb_substr($content, mb_strpos($content, '{'));
-        $php = ARR::from_json($json);
+        $php = Compatible::Arr_from_json($json);
 
         $php[$to] = $data;
 
-        $json = ARR::to_json($php);
+        $json = Compatible::Arr_to_json($php);
 
         file_put_contents($file, 'var catalog=' . $json . ';');
 
@@ -151,119 +155,115 @@ class CREATE_TREE_UTILS
 
     public static function GENERATE($id_ctlg_subset)
     {
-        global $ICONS;
 
-        $out = array();
+        $out = [];
 
-        $q = '
-        select
-            *
-        from
-            CTLG_SUBSET_NODE csn
-            join
-            CTLG_NODE cn
-                on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
-        where
-            csn.ID_CTLG_SUBSET = ' . $id_ctlg_subset . '
-            and
-            cn.LEVEL_NODE = 0
-            and
-            csn.ARCH<>1
-            and
-            cn.ARCH<>1
-        order by
-            cn.NOM_PP
-        ';
+        $q =
+            "SELECT
+                *
+            from
+                CTLG_SUBSET_NODE csn
+                join
+                CTLG_NODE cn
+                    on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
+            where
+                csn.ID_CTLG_SUBSET =  $id_ctlg_subset
+                and
+                cn.LEVEL_NODE = 0
+                and
+                csn.ARCH<>1
+                and
+                cn.ARCH<>1
+            order by
+                cn.NOM_PP
+        ";
 
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
 
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $child = self::child($row['ID_CTLG_NODE'], $id_ctlg_subset);
-                $data = array(
+                $data = [
                     'caption' => self::stringCorrect($row['CAPTION']),
                     //'ICON_IND'=>$row['ICON_IND'],
-                    'icon' => $ICONS[$row['ICON_IND']],
+                    'icon' => ICONS[$row['ICON_IND']],
                     'id' => $row['ID_CTLG_NODE'],
-                );
+                ];
 
                 if (count($child) > 0) {
                     $data['child'] = $child;
                 }
 
-                array_push($out, $data);
+                $out[] = $data;
 
             }
 
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         //---------------------------------------
 
-        $data = array(
+        $data = [
             'caption' => 'Личный кабинет',
             'icon' => 'file',
-
             'id' => 'main_page',
             'viewAs' => 'mainPage',
-
-        );
-        array_push($out, $data);
+        ];
+        $out[] = $data;
 
         //---------------------------------------
 
-        return array('res' => 1, 'data' => $out);
+        return ['res' => 1, 'data' => $out];
 
     }
 
     public static function CREATE_SEPARATELY($kind)
     {
 
-        global $ICONS;
-        $out = array();
+        $out = [];
 
         //$kind = 'tkani';
         $id = self::getRootIdByKind($kind);
         $id_ctlg_subset = 2;
 
-        $q = '
-        select
-            *
-        from
-            CTLG_SUBSET_NODE csn
-            join
-            CTLG_NODE cn
-                on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
-        where
-            csn.ID_CTLG_SUBSET = ' . $id_ctlg_subset . '
-            and
-            cn.LEVEL_NODE = 0
-            and
-            csn.ARCH<>1
-            and
-            cn.ARCH<>1
-            and
-            cn.ID_CTLG_NODE = ' . $id . '
-        order by
-            cn.NOM_PP
-        ';
+        $q =
+            "SELECT
+                *
+            from
+                CTLG_SUBSET_NODE csn
+                join
+                CTLG_NODE cn
+                    on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
+            where
+                csn.ID_CTLG_SUBSET =  $id_ctlg_subset
+                and
+                cn.LEVEL_NODE = 0
+                and
+                csn.ARCH<>1
+                and
+                cn.ARCH<>1
+                and
+                cn.ID_CTLG_NODE =  $id
+            order by
+                cn.NOM_PP
+        ";
 
         //console::log("id = $id ",__FILE__,__LINE__);
 
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
             $row = base::row($ds);
             $out = self::child2($row['ID_CTLG_NODE'], $id_ctlg_subset, $kind);
 
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
-        return array('res' => 1, 'data' => $out);
+        return ['res' => 1, 'data' => $out];
     }
 
     public static function stringCorrect($str)
@@ -285,43 +285,41 @@ class CREATE_TREE_UTILS
 
     private static function child($id_parent, $id_ctlg_subset)
     {
-        global $ICONS;
-        global $SRCE_KIND;
 
-        $out = array();
+        $out = [];
 
-        $q = '
-        select
-            *
-        from
-            CTLG_SUBSET_NODE csn
-            join
-            CTLG_NODE cn
-                on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
-        where
-            csn.ID_CTLG_SUBSET = ' . $id_ctlg_subset . '
-            and
-            cn.ID_PARENT = ' . $id_parent . '
-            and
-            csn.ARCH<>1
-            and
-            cn.ARCH<>1
-        order by
-            cn.NOM_PP
-        ';
+        $q =
+            "SELECT
+                *
+            from
+                CTLG_SUBSET_NODE csn
+                join
+                CTLG_NODE cn
+                    on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
+            where
+                csn.ID_CTLG_SUBSET = $id_ctlg_subset
+                and
+                cn.ID_PARENT = $id_parent
+                and
+                csn.ARCH<>1
+                and
+                cn.ARCH<>1
+            order by
+                cn.NOM_PP
+        ";
 
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
-                $kind = $SRCE_KIND[$row['SRCE_KIND']];
+                $kind = SRCE_KIND[$row['SRCE_KIND']];
 
                 $ID = $row['SRCE_ID'];
                 $FIELD = $kind['field'];
                 $TABLE = $kind['table'];
 
-                $node = array();
+                $node = [];
                 $node['id'] = $row['ID_CTLG_NODE'];
                 $node[$FIELD] = $ID;
                 $node['table'] = $TABLE;
@@ -334,10 +332,10 @@ class CREATE_TREE_UTILS
                 }
 
                 //$node['ICON_IND']   =   $row['ICON_IND'];
-                $node['icon'] = $ICONS[$row['ICON_IND']];
+                $node['icon'] = ICONS[$row['ICON_IND']];
                 $node['SRCE_KIND'] = $row['SRCE_KIND'];
 
-                $node['media'] = self::_get_media($ID, COMMON::get($kind, 'media_kind', ''));
+                $node['media'] = self::_get_media($ID, Common::get($kind, 'media_kind', ''));
 
                 if ($row['SRCE_KIND'] == 0) {
                     if (count($child) === 0) {
@@ -353,11 +351,11 @@ class CREATE_TREE_UTILS
                     $node = array_merge($node, self::jaluzi($row));
                 }
 
-                array_push($out, $node);
+                $out[] = $node;
 
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $out;
@@ -367,43 +365,40 @@ class CREATE_TREE_UTILS
     private static function child2($id_parent, $id_ctlg_subset, $akind)
     {
 
-        global $ICONS;
-        global $SRCE_KIND;
+        $out = [];
 
-        $out = array();
+        $q =
+            "SELECT
+                *
+            from
+                CTLG_SUBSET_NODE csn
+                join
+                CTLG_NODE cn
+                    on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
+            where
+                csn.ID_CTLG_SUBSET = $id_ctlg_subset
+                and
+                cn.ID_PARENT =  $id_parent
+                and
+                csn.ARCH<>1
+                and
+                cn.ARCH<>1
+            order by
+                cn.NOM_PP
+            ";
 
-        $q = '
-        select
-            *
-        from
-            CTLG_SUBSET_NODE csn
-            join
-            CTLG_NODE cn
-                on csn.ID_CTLG_NODE = cn.ID_CTLG_NODE
-        where
-            csn.ID_CTLG_SUBSET = ' . $id_ctlg_subset . '
-            and
-            cn.ID_PARENT = ' . $id_parent . '
-            and
-            csn.ARCH<>1
-            and
-            cn.ARCH<>1
-        order by
-            cn.NOM_PP
-        ';
-
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
-                $kind = $SRCE_KIND[$row['SRCE_KIND']];
+                $kind = SRCE_KIND[$row['SRCE_KIND']];
 
                 $ID = $row['SRCE_ID'];
                 $FIELD = $kind['field'];
                 $TABLE = $kind['table'];
 
-                $node = array();
+                $node = [];
                 $node['id'] = $row['ID_CTLG_NODE'];
                 $node[$FIELD] = $ID;
                 $node['table'] = $TABLE;
@@ -417,7 +412,7 @@ class CREATE_TREE_UTILS
                 }
 
                 //$node['ICON_IND']   =   $row['ICON_IND'];
-                $node['icon'] = $ICONS[$row['ICON_IND']];
+                $node['icon'] = ICONS[$row['ICON_IND']];
                 $node['SRCE_KIND'] = $row['SRCE_KIND'];
 
                 //$node['media'] = self::_get_media($ID,$kind['media_kind']);
@@ -436,12 +431,12 @@ class CREATE_TREE_UTILS
                     $node = array_merge($node, self::jaluzi($row));
                 }
                 if (self::srceKindToKind($row['SRCE_KIND']) === $akind) {
-                    array_push($out, $node);
+                    $out[] = $node;
                 }
 
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $out;
@@ -450,9 +445,8 @@ class CREATE_TREE_UTILS
 
     private static function karniz($row)
     {
-        global $SRCE_KIND;
-        $out = array();
-        $kind = $SRCE_KIND[$row['SRCE_KIND']];
+        $out = [];
+        $kind = SRCE_KIND[$row['SRCE_KIND']];
 
         $ID = $row['SRCE_ID'];
         $FIELD = $kind['field'];
@@ -461,7 +455,7 @@ class CREATE_TREE_UTILS
         $priceType = self::_typePrice($ID, $is_chapter);
 
         $q = "select SHOW_AS from $TABLE where $FIELD=$ID";
-        $show_as = base::val($q, 0, 'deco');
+        $show_as = Base::value($q, 'deco', ['default' => 0]);
 
         $out['viewAs'] = self::_viewAs($show_as, $priceType);
 
@@ -474,7 +468,7 @@ class CREATE_TREE_UTILS
 
     private static function jaluzi($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'jaluzi';
 
         return $out;
@@ -482,7 +476,7 @@ class CREATE_TREE_UTILS
 
     private static function tkani($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'tkani';
         return $out;
     }
@@ -506,21 +500,22 @@ class CREATE_TREE_UTILS
     private static function _typePrice($id, $is_chapter)
     {
 
-        $q = '
-            select distinct
+        $q =
+            "SELECT distinct
                 t.PRICELIST_KIND
             from
                 K_MODEL_TOVAR mt
-            join
+                join
                 K_MODEL_TOVAR_DETAIL mtd
-                on mt.ID_K_MODEL_TOVAR = mtd.ID_K_MODEL_TOVAR
-            join
+                    on mt.ID_K_MODEL_TOVAR = mtd.ID_K_MODEL_TOVAR
+                join
                 K_TOVAR_DETAIL td
-                on td.ID_K_TOVAR_DETAIL = mtd.ID_K_TOVAR_DETAIL
-            join
+                    on td.ID_K_TOVAR_DETAIL = mtd.ID_K_TOVAR_DETAIL
+                join
                 K_TOVAR t
-                on td.ID_K_TOVAR = t.ID_K_TOVAR
-            where ';
+                    on td.ID_K_TOVAR = t.ID_K_TOVAR
+            where
+            ";
 
         if ($is_chapter) {
             $q .= 'mt.ID_K_CHAPTER=' . $id;
@@ -528,25 +523,17 @@ class CREATE_TREE_UTILS
             $q .= 'mt.ID_K_MODEL=' . $id;
         }
 
-        return (base::value($q, 'PRICELIST_KIND', 1, 'deco') == 2 ? 'B' : 'A');
-        /*
-    if (MYSQL::Assigned($ds))
-    return ($ds->FieldByName('PRICELIST_KIND')==2);
-    return 'A';
-
-    return self::priceBTovarList($id,$is_chapter,true)>0?'B':'A';
-     */
+        return (base::value($q, 'deco', ['default' => 1]) == 2 ? 'B' : 'A');
     }
 
     private static function _get_media($id, $OWNER_KIND)
     {
 
-        $view = array();
-        $download = array();
-        $print = array();
+        $view = [];
+        $download = [];
+        $print = [];
 
         $OWNER_ID = $id;
-        //$OWNER_KIND = ($is_chapter?2:1);
 
         $q = "select ID_C_MEDIA_FILE,CAPTION,PATH_WWW,PROCESSING_KIND from C_MEDIA_FILE where OWNER_ID = $OWNER_ID and OWNER_KIND = $OWNER_KIND and ARCH<>1 order by PROCESSING_KIND,NOM_PP ";
         if ($id == '362') {
@@ -554,9 +541,9 @@ class CREATE_TREE_UTILS
 
         }
         $PROCESSING_KIND = -1;
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $row['CAPTION'] = self::stringCorrect($row['CAPTION']);
                 if ($PROCESSING_KIND !== $row['PROCESSING_KIND']) {
@@ -566,18 +553,18 @@ class CREATE_TREE_UTILS
                 $row['PATH_WWW'] = HTTP_MEDIA . $row['PATH_WWW'];
                 //$row['PATH_WWW'] = 'path_ww';
                 if ($PROCESSING_KIND == 1) {
-                    array_push($view, $row['PATH_WWW']);
+                    $view[] = $row['PATH_WWW'];
                 } elseif ($PROCESSING_KIND == 2) {
-                    array_push($download, $row);
+                    $download[] = $row;
                 } elseif ($PROCESSING_KIND == 3) {
-                    array_push($print, $row);
+                    $print[] = $row;
                 }
 
             }
         } else {
             //console::log("Error [$q]",__FILE__,__LINE__);
         }
-        $out = array();
+        $out = [];
         if (count($view) > 0) {
             $out['gallery'] = $view;
         }
@@ -598,9 +585,10 @@ class CREATE_TREE_UTILS
     {
         // возвращает список товаров по которым будут создаваться матричные прайс-листы
 
-        $q = 'select distinct t.ID_K_TOVAR ';
-
-        $q .= 'from
+        $q =
+            "SELECT distinct
+                t.ID_K_TOVAR
+            from
                 K_MODEL_TOVAR mt
                 join
                 K_MODEL_TOVAR_DETAIL mtd
@@ -619,14 +607,16 @@ class CREATE_TREE_UTILS
                 t.ARCH<>1
                 and
                 mt.ARCH<>1
-                and ';
+                and
+            ";
+
         if ($is_chapter) {
             $q .= 'mt.id_k_chapter=' . $id;
         } else {
             $q .= 'mt.id_k_model=' . $id;
         }
 
-        return base::value($q, 'ID_K_TOVAR', '-1', 'deco', 'UTF8');
+        return base::value($q, 'deco', ['default' => -1]);
 
     }
     /**
@@ -635,23 +625,23 @@ class CREATE_TREE_UTILS
      */
     private static function getRootIdByKind($kind)
     {
-        $q = '
-        select distinct
-            cn1.ID_CTLG_NODE
-        from
-                CTLG_NODE cn1
-            join
-                CTLG_NODE cn2
-            on
-                cn1.ID_CTLG_NODE = cn2.ID_PARENT
-        where
-            cn1.LEVEL_NODE = 0
-            and
-            cn1.ARCH<>1
-            and
-            cn2.ARCH<>1
-            and
-            cn2.SRCE_KIND IN ';
+        $q =
+            "SELECT distinct
+                cn1.ID_CTLG_NODE
+            from
+                    CTLG_NODE cn1
+                join
+                    CTLG_NODE cn2
+                on
+                    cn1.ID_CTLG_NODE = cn2.ID_PARENT
+            where
+                cn1.LEVEL_NODE = 0
+                and
+                cn1.ARCH<>1
+                and
+                cn2.ARCH<>1
+                and
+                cn2.SRCE_KIND IN ";
 
         if (($kind === 'karniz') || ($kind == 1)) {
             $q .= '(1,2,6,7)';
@@ -665,16 +655,16 @@ class CREATE_TREE_UTILS
             $q .= '(10,11)';
         }
 
-        return base::val($q, -1, 'deco');
+        return base::value($q, 'deco', ['default' => -1]);
 
     }
 
     private static function srceKindToKind($srce_kind)
     {
 
-        $karniz = array(1, 2, 6, 7);
-        $tkani = array(8, 9);
-        $jaluzi = array(10, 11);
+        $karniz = [1, 2, 6, 7];
+        $tkani = [8, 9];
+        $jaluzi = [10, 11];
 
         if (array_search($srce_kind, $karniz) !== false) {
             return 'karniz';

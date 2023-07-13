@@ -13,7 +13,7 @@ use wu\utils\Bdr;
 use wu\utils\Compatible;
 
 // включает сохранение обновления
-define('SAVE_UPDATE_CHANGES', true);
+const SAVE_UPDATE_CHANGES = true;
 
 class UPDATE_UTILS
 {

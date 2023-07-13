@@ -1,4 +1,7 @@
 <?php
+namespace wu\utils;
+
+use fmihel\base\Base;
 use fmihel\config\Config;
 
 const NOT_USE_FIELD = [
@@ -14,9 +17,9 @@ class OrdersBlankTree
         //--------------------------------------------------------------
         //$q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = 0 and DEBUG_MODE<>1 ORDER BY NOM_PP';
         $q = 'SELECT * from ORDERS_BLANK_TREE where ID_PARENT = 0  ORDER BY NOM_PP';
-        $ds = base::ds($q, 'deco', 'utf8');
+        $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
-            while ($row = base::read($ds)) {
+            while ($row = Base::read($ds)) {
                 $props = self::propToJs('id', $row['ID_ORDER_BLANK_TREE']);
                 $props .= self::propToJs('caption', $row['CAPTION']);
 
@@ -49,12 +52,12 @@ class OrdersBlankTree
         $out = '';
         $q = "SELECT * from ORDERS_BLANK_TREE where ID_PARENT = $ID_ORDER_BLANK_TREE  ORDER BY NOM_PP";
         //$q = 'select * from ORDERS_BLANK_TREE where ID_PARENT = '.$ID_ORDER_BLANK_TREE.'  and DEBUG_MODE<>1 ORDER BY NOM_PP';
-        $ds = base::ds($q, 'deco', 'utf8');
+        $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
-            while ($row = base::read($ds)) {
+            while ($row = Base::read($ds)) {
                 $ok = true;
                 if ($row['ID_J_TMPL'] == 0 && $row['ID_K_TEMPL'] == 0 && $row['ID_B_BLANK'] == 0) {
-                    $ok = (base::value('select count(ID_ORDER_BLANK_TREE) cnt from ORDERS_BLANK_TREE where ID_PARENT=' . $row['ID_ORDER_BLANK_TREE'], 'cnt', 0, 'deco') > 0);
+                    $ok = (Base::value('select count(ID_ORDER_BLANK_TREE) cnt from ORDERS_BLANK_TREE where ID_PARENT=' . $row['ID_ORDER_BLANK_TREE'], 'deco', ['default' => 0]) > 0);
                 };
 
                 if ($ok) {

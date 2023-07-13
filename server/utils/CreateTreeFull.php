@@ -1,4 +1,12 @@
 <?php
+namespace wu\utils;
+
+use fmihel\base\Base;
+use fmihel\console;
+use fmihel\lib\Common;
+
+require_once __DIR__ . './XmlCatalogFast.php';
+
 /*
 SRCE_KIND = 1 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
 SRCE_KIND = 2 :    SRCE_ID соотвествует ID_K_MODEL из K_MODEL
@@ -41,7 +49,7 @@ $ICONS = array(
 define('SRCE_MODEL',2);
  */
 
-class CREATE_FULL_TREE_UTILS
+class CreateTreeFull
 {
 
     public static function SAVE($to, $data)
@@ -50,11 +58,12 @@ class CREATE_FULL_TREE_UTILS
         $content = file_get_contents($file);
 
         $json = mb_substr($content, mb_strpos($content, '{'));
-        $php = ARR::from_json($json);
+
+        $php = Compatible::Arr_from_json($json);
 
         $php[$to] = $data;
 
-        $json = ARR::to_json($php);
+        $json = Compatible::Arr_to_json($php);
 
         file_put_contents($file, 'var catalog=' . $json . ';');
 
@@ -63,56 +72,54 @@ class CREATE_FULL_TREE_UTILS
     public static function GENERATE()
     {
 
-        $out = array();
+        $out = [];
         $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
 
-            while (base::by($ds, $row)) {
-                array_push($out, array(
+            while ($row = Base::read($ds)) {
+                $out[] = [
                     'caption' => $row['CAPTION'],
                     'child' => self::child($row['ID_CTLG_NODE']),
                     'ICON_IND' => $row['ICON_IND'],
                     'id' => $row['ID_CTLG_NODE'],
-                ));
+                ];
 
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
-        return array('res' => 1, 'data' => $out);
+        return ['res' => 1, 'data' => $out];
 
     }
     private static function child($id_parent)
     {
-        global $ICONS;
-        global $SRCE_KIND;
 
-        $out = array();
+        $out = [];
         $q = "select * from CTLG_NODE where ID_PARENT = $id_parent and  ARCH<>1 order by NOM_PP";
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8s');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
-                $kind = $SRCE_KIND[$row['SRCE_KIND']];
+                $kind = SRCE_KIND[$row['SRCE_KIND']];
 
                 $ID = $row['SRCE_ID'];
                 $FIELD = $kind['field'];
                 $TABLE = $kind['table'];
 
-                $node = array();
+                $node = [];
                 $node['id'] = $row['ID_CTLG_NODE'];
                 $node[$FIELD] = $ID;
 
                 $node['caption'] = $row['CAPTION'];
                 $node['child'] = self::child($row['ID_CTLG_NODE']);
                 //$node['ICON_IND']   =   $row['ICON_IND'];
-                $node['icon'] = $ICONS[$row['ICON_IND']];
+                $node['icon'] = ICONS[$row['ICON_IND']];
 
-                $node['media'] = self::_get_media($ID, COMMON::get($kind, 'media_kind', ''));
+                $node['media'] = self::_get_media($ID, Common::get($kind, 'media_kind', ''));
 
                 if (($row['SRCE_KIND'] == 1) || ($row['SRCE_KIND'] == 2) || ($row['SRCE_KIND'] == 6) || ($row['SRCE_KIND'] == 7)) {
                     $node['IS_CHAPTER'] = ($kind['is_chapter'] ? 1 : 0);
@@ -123,11 +130,11 @@ class CREATE_FULL_TREE_UTILS
                     $node = array_merge($node, self::jaluzi($row));
                 }
 
-                array_push($out, $node);
+                $out[] = $node;
 
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $out;
@@ -135,9 +142,8 @@ class CREATE_FULL_TREE_UTILS
     }
     private static function karniz($row)
     {
-        global $SRCE_KIND;
-        $out = array();
-        $kind = $SRCE_KIND[$row['SRCE_KIND']];
+        $out = [];
+        $kind = SRCE_KIND[$row['SRCE_KIND']];
 
         $ID = $row['SRCE_ID'];
         $FIELD = $kind['field'];
@@ -146,7 +152,7 @@ class CREATE_FULL_TREE_UTILS
         $priceType = self::_typePrice($ID, $is_chapter);
 
         $q = "select SHOW_AS from $TABLE where $FIELD=$ID";
-        $show_as = base::val($q, 0, 'deco');
+        $show_as = Base::value($q, 'deco', ['default' => 0]);
 
         $out['viewAs'] = self::_viewAs($show_as, $priceType);
 
@@ -154,67 +160,16 @@ class CREATE_FULL_TREE_UTILS
     }
     private static function jaluzi($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'jaluzi';
 
         return $out;
     }
     private static function tkani($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'tkani';
         return $out;
-    }
-
-    public static function KARNIZ2()
-    {
-
-        $data = array();
-
-        XML_CATALOG_FAST::load(CATALOG_XML, -3);
-
-        $q = '
-        select
-            ID_K_CHAPTER,
-            CAPTION,
-            ID_PARENT
-        from
-            K_CHAPTER
-        where
-            ARCH<>1
-                and
-            ID_AREA_ACT=1
-                and
-            ID_K_MODEL = 0
-                and
-            ID_PARENT = 0
-        order by NOM_PP';
-
-        $ds = base::ds($q, 'deco', 'UTF8');
-
-        if ($ds) {
-            while (base::by($ds, $row)) {
-                $node = array('caption' => $row['CAPTION'], 'IS_CHAPTER' => 1, 'ID' => $row['ID_K_CHAPTER'], 'child' => array());
-
-                $child = self::_chapters($row['ID_K_CHAPTER']);
-                if (count($child) > 0) {
-                    $node['child'] = array_merge($node['child'], $child);
-                }
-
-                $child = self::_models($row['ID_K_CHAPTER']);
-                if (count($child) > 0) {
-                    $node['child'] = array_merge($node['child'], $child);
-                }
-
-                array_push($data, $node);
-            }
-
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-
     }
 
     private static function _chapters($id_k_chapter)
@@ -223,27 +178,27 @@ class CREATE_FULL_TREE_UTILS
         //$data = self::_imagesKarnizFromXml($id_k_chapter,1);
         $up = self::_get_media($id_k_chapter, true);
 
-        $data = array();
+        $data = [];
 
-        $q = "
-        select
-            ID_K_CHAPTER,
-            CAPTION,
-            ID_PARENT,
-            SHOW_AS
-        from
-            K_CHAPTER
-        where
-            ARCH<>1
-            and
-            ID_PARENT = $id_k_chapter
+        $q =
+            "SELECT
+                ID_K_CHAPTER,
+                CAPTION,
+                ID_PARENT,
+                SHOW_AS
+            from
+                K_CHAPTER
+            where
+                ARCH<>1
+                and
+                ID_PARENT = $id_k_chapter
+            order by
+                NOM_PP";
 
-        order by NOM_PP";
-
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $media = self::_get_media($row['ID_K_CHAPTER'], true);
                 if (count($up['download']) > 0) {
@@ -254,7 +209,7 @@ class CREATE_FULL_TREE_UTILS
                     'caption' => $row['CAPTION'],
                     'IS_CHAPTER' => 1,
                     'ID' => $row['ID_K_CHAPTER'],
-                    'child' => array(),
+                    'child' => [],
                     'media' => $media,
                 );
 
@@ -277,7 +232,7 @@ class CREATE_FULL_TREE_UTILS
                     $tovars = self::priceBTovarList($row['ID_K_CHAPTER'], true);
 
                     if ($tovars) {
-                        while (base::by($tovars, $tovar)) {
+                        while ($tovar = Base::read($tovars)) {
                             $node['child'] = array(array(
                                 'caption' => 'Прайс ' . $tovar['NAME'],
                                 'ID_K_TOVAR' => $tovar['ID_K_TOVAR'],
@@ -288,7 +243,7 @@ class CREATE_FULL_TREE_UTILS
                             ));
                         }
                     } else {
-                        console::log("Error [...]", __FILE__, __LINE__);
+                        console::error("tovars is empty");
                     }
 
                 } else {
@@ -300,10 +255,10 @@ class CREATE_FULL_TREE_UTILS
                     //));
                 }
 
-                array_push($data, $node);
+                $data[] = $node;
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $data;
@@ -312,28 +267,31 @@ class CREATE_FULL_TREE_UTILS
     private static function _chaptersInModel($id_k_model)
     {
 
-        $data = array();
+        $data = [];
         $up = self::_get_media($id_k_model, false);
 
-        $q = "select
-            ID_K_CHAPTER,
-            CAPTION,
-            ID_PARENT,
-            ID_K_MODEL,
-            SHOW_AS
-        from
-            K_CHAPTER
-        where
-            ARCH<>1
-            and
-            ID_K_MODEL = $id_k_model
-        order by NOM_PP";
+        $q =
+            "SELECT
+                ID_K_CHAPTER,
+                CAPTION,
+                ID_PARENT,
+                ID_K_MODEL,
+                SHOW_AS
+            from
+                K_CHAPTER
+            where
+                ARCH<>1
+                and
+                ID_K_MODEL = $id_k_model
+            order by
+                NOM_PP
+            ";
 
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
 
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $media = self::_get_media($row['ID_K_CHAPTER'], true);
                 if (count($up['download']) > 0) {
@@ -350,7 +308,7 @@ class CREATE_FULL_TREE_UTILS
                         'child' => $child,
                         'media' => $media,
                     );
-                    array_push($data, $node);
+                    $data[] = $node;
 
                 } else {
 
@@ -361,12 +319,12 @@ class CREATE_FULL_TREE_UTILS
                         $tovars = self::priceBTovarList($row['ID_K_CHAPTER'], true);
 
                         if ($tovars) {
-                            while (base::by($tovars, $tovar)) {
+                            while ($tovar = Base::read($tovars)) {
                                 $node = array(
                                     'caption' => $tovar['NAME'],
                                     'IS_CHAPTER' => 1,
                                     'ID' => $row['ID_K_CHAPTER'],
-                                    'child' => array(),
+                                    'child' => [],
                                     'ID_K_TOVAR' => $tovar['ID_K_TOVAR'],
                                     'icon' => 'file',
                                     "viewAs" => self::_viewAs($row['SHOW_AS'], $typePrice),
@@ -383,7 +341,7 @@ class CREATE_FULL_TREE_UTILS
                             'caption' => $row['CAPTION'],
                             'IS_CHAPTER' => 1,
                             'ID' => $row['ID_K_CHAPTER'],
-                            'child' => array(),
+                            'child' => [],
                             'icon' => 'file',
                             'viewAs' => self::_viewAs($row['SHOW_AS'], $typePrice),
                             'media' => $media,
@@ -395,9 +353,9 @@ class CREATE_FULL_TREE_UTILS
 
                 /*
 
-            $node    = array('caption'=>$row['CAPTION'],'IS_CHAPTER'=>1,'ID'=>$row['ID_K_CHAPTER'],'child'=>array());
+            $node    = array('caption'=>$row['CAPTION'],'IS_CHAPTER'=>1,'ID'=>$row['ID_K_CHAPTER'],'child'=>[]);
             $child   = self::_chapters($row['ID_K_CHAPTER']);
-            //$child = array();
+            //$child = [];
 
             if (count($child)>0)
             $node['child']=array_merge($node['child'],$child);
@@ -413,7 +371,7 @@ class CREATE_FULL_TREE_UTILS
             }
 
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $data;
@@ -425,24 +383,26 @@ class CREATE_FULL_TREE_UTILS
         //$data = self::_imagesKarnizFromXml($id_k_chapter,1);
         $up = self::_get_media($id_k_chapter, true);
 
-        $data = array();
-        $q = "
-        select
-            ID_K_MODEL,
-            NAME,
-            SHOW_AS
-        from
-            K_MODEL
-        where
-            ARCH<>1
-            and
-            ID_K_CHAPTER = $id_k_chapter
-        order by NOM_PP";
+        $data = [];
+        $q =
+            "SELECT
+                ID_K_MODEL,
+                NAME,
+                SHOW_AS
+            from
+                K_MODEL
+            where
+                ARCH<>1
+                and
+                ID_K_CHAPTER = $id_k_chapter
+            order by
+                NOM_PP
+            ";
 
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $media = self::_get_media($row['ID_K_MODEL'], false);
 
@@ -450,31 +410,31 @@ class CREATE_FULL_TREE_UTILS
                     $media = array_merge($up, $media);
                 }
 
-                $node = array(
+                $node = [
                     'caption' => $row['NAME'],
                     'IS_CHAPTER' => 0,
                     'ID' => $row['ID_K_MODEL'],
-                    'child' => array(),
+                    'child' => [],
                     'media' => $media,
-                );
+                ];
 
                 $child = self::_chaptersInModel($row['ID_K_MODEL']);
 
-                //$images = array();
+                //$images = [];
                 //$node['child']=array_merge($node['child'],$images);
 
                 if (count($child) > 0) {
 
                     if (self::_hasTovar($row['ID_K_MODEL'], false)) {
-                        array_push($child, array(
+                        $child[] = [
                             'caption' => 'Прайс',
                             'IS_CHAPTER' => 0,
                             'ID' => $row['ID_K_MODEL'],
-                            'child' => array(),
+                            'child' => [],
                             'icon' => 'file',
                             'media' => $media,
                             "viewAs" => self::_viewAs(1, self::_typePrice($row['ID_K_MODEL'], false)),
-                        ));
+                        ];
 
                     }
 
@@ -488,40 +448,38 @@ class CREATE_FULL_TREE_UTILS
                         $tovars = self::priceBTovarList($row['ID_K_MODEL'], false);
 
                         if ($tovars) {
-                            while (base::by($tovars, $tovar)) {
-
-                                array_push($node['child'], array(
+                            while ($tovar = Base::read($tovars)) {
+                                $node['child'][] = [
                                     'caption' => 'Прайс ' . $tovar['NAME'],
                                     "icon" => "file",
                                     'IS_CHAPTER' => 0,
                                     'ID' => $row['ID_K_MODEL'],
                                     'ID_K_TOVAR' => $tovar['ID_K_TOVAR'],
                                     "viewAs" => self::_viewAs($row['SHOW_AS'], $typePrice),
-                                ));
+                                ];
 
                             }
                         } else {
-                            console::log("Error [$q]", __FILE__, __LINE__);
+                            console::error($q);
                         }
 
                     } else {
-                        array_push($node['child'], array(
+                        $node['child'][] = [
                             'caption' => 'Прайс',
                             "icon" => "file",
                             'IS_CHAPTER' => 0,
                             'ID' => $row['ID_K_MODEL'],
                             "viewAs" => self::_viewAs($row['SHOW_AS'], $typePrice),
-                        ));
+                        ];
                     }
 
-                    //array_push($node['child'],$add ) ;
                 }
 
                 array_push($data, $node);
             };
 
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         return $data;
@@ -543,9 +501,9 @@ class CREATE_FULL_TREE_UTILS
     private static function _get_media($id, $OWNER_KIND)
     {
 
-        $view = array();
-        $download = array();
-        $print = array();
+        $view = [];
+        $download = [];
+        $print = [];
 
         $OWNER_ID = $id;
         //$OWNER_KIND = ($is_chapter?2:1);
@@ -556,9 +514,9 @@ class CREATE_FULL_TREE_UTILS
 
         }
         $PROCESSING_KIND = -1;
-        $ds = base::ds($q, 'deco', 'UTF8');
+        $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 if ($PROCESSING_KIND !== $row['PROCESSING_KIND']) {
                     $PROCESSING_KIND = $row['PROCESSING_KIND'];
@@ -566,19 +524,19 @@ class CREATE_FULL_TREE_UTILS
 
                 $row['PATH_WWW'] = HTTP_MEDIA . $row['PATH_WWW'];
                 if ($PROCESSING_KIND == 1) {
-                    array_push($view, $row['PATH_WWW']);
+                    $view[] = $row['PATH_WWW'];
                 } elseif ($PROCESSING_KIND == 2) {
-                    array_push($download, $row);
+                    $download[] = $row;
                 } elseif ($PROCESSING_KIND == 3) {
-                    array_push($print, $row);
+                    $print[] = $row;
                 }
 
             }
         } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
-        $out = array();
+        $out = [];
         if (count($view) > 0) {
             $out['gallery'] = $view;
         }
@@ -595,59 +553,25 @@ class CREATE_FULL_TREE_UTILS
 
     }
 
-    private static function _imagesKarnizFromXml($id, $is_chapter)
-    {
-
-        $data = array();
-        $find = XML_CATALOG_FAST::find($id, $is_chapter);
-        for ($i = 0; $i < count($find); $i++) {
-            $fin = $find[$i];
-
-            //--------------------------------------------------------------
-            $path = PDF_CATALOG_PATH . 'JPG/' . APP::without_ext($fin['file']);
-            $images = DIR::files($path, 'jpg', false, true);
-            $path = PDF_CATALOG_HTTP_PATH . 'JPG/' . APP::without_ext($fin['file']) . '/';
-            for ($j = 0; $j < count($images); $j++) {
-                $images[$j] = $path . $images[$j];
-            }
-
-            //--------------------------------------------------------------
-
-            array_push($data, array(
-                'caption' => $fin['name'],
-                "icon" => "file",
-                "file" => PDF_HTTP_PATH . $fin["file"],
-
-                'IS_CHAPTER' => $is_chapter,
-                'ID' => $id,
-
-                "viewAs" => 'gallery',
-                "images" => $images,
-
-            ));
-        }
-
-        return $data;
-    }
     /** возвращает букву определяющую тип прайса карнизов A или B */
     private static function _typePrice($id, $is_chapter)
     {
 
-        $q = '
-            select distinct
+        $q =
+            "SELECT distinct
                 t.PRICELIST_KIND
             from
                 K_MODEL_TOVAR mt
-            join
-                K_MODEL_TOVAR_DETAIL mtd
-                on mt.ID_K_MODEL_TOVAR = mtd.ID_K_MODEL_TOVAR
-            join
-                K_TOVAR_DETAIL td
-                on td.ID_K_TOVAR_DETAIL = mtd.ID_K_TOVAR_DETAIL
-            join
-                K_TOVAR t
-                on td.ID_K_TOVAR = t.ID_K_TOVAR
-            where ';
+                join
+                    K_MODEL_TOVAR_DETAIL mtd
+                    on mt.ID_K_MODEL_TOVAR = mtd.ID_K_MODEL_TOVAR
+                join
+                    K_TOVAR_DETAIL td
+                    on td.ID_K_TOVAR_DETAIL = mtd.ID_K_TOVAR_DETAIL
+                join
+                    K_TOVAR t
+                    on td.ID_K_TOVAR = t.ID_K_TOVAR
+            where ";
 
         if ($is_chapter) {
             $q .= 'mt.ID_K_CHAPTER=' . $id;
@@ -655,22 +579,16 @@ class CREATE_FULL_TREE_UTILS
             $q .= 'mt.ID_K_MODEL=' . $id;
         }
 
-        return (base::value($q, 'PRICELIST_KIND', 1, 'deco') == 2 ? 'B' : 'A');
-        /*
-    if (MYSQL::Assigned($ds))
-    return ($ds->FieldByName('PRICELIST_KIND')==2);
-    return 'A';
-
-    return self::priceBTovarList($id,$is_chapter,true)>0?'B':'A';
-     */
+        return (Base::value($q, 'deco', ['default' => 1]) == 2 ? 'B' : 'A');
     }
     /** проевряет, есть литовары привязаные к узлу */
     private static function _hasTovar($id, $is_chapter)
     {
         $q = 'select count(ID_K_MODEL_TOVAR) C from K_MODEL_TOVAR where ARCH<>1 and ' . ($is_chapter ? 'ID_K_CHAPTER' : 'ID_K_MODEL') . '=' . $id;
 
-        return (base::value($q, 'C', 0, 'deco') > 0);
+        return (Base::value($q, 'deco', ['default' => 0]) > 0);
     }
+
     private static function priceBTovarList($id, $is_chapter, $onlyCount = false)
     {
         // возвращает список товаров по которым будут создаваться матричные прайс-листы
@@ -707,269 +625,12 @@ class CREATE_FULL_TREE_UTILS
             $q .= 'mt.id_k_model=' . $id;
         }
 
-        //console::log("[$q]",__FILE__,__LINE__);
-
-        //if (!base::ds($q,'deco'))
-        //    console::log("ERROR[$q]",__FILE__,__LINE__);
-
         if ($onlyCount) {
-            return intval(base::value($q, 'C', 0, 'deco'));
+            return intval(Base::value($q, 'C', 0, 'deco'));
         } else {
-            return base::ds($q, 'deco', 'UTF8');
+            return Base::ds($q, 'deco', 'utf8');
         }
 
-    }
-
-    private static function JALUZ2I()
-    {
-        $data = array();
-
-        $q = 'SELECT * FROM `J_FOLDER` WHERE ID_PARENT = 0 and ARCH <> 1 order by ORD';
-        $ds = base::ds($q, 'deco', 'UTF8');
-        if ($ds) {
-            while (base::by($ds, $row)) {
-                $node = array('caption' => $row['NAME'], 'ID_J_FOLDER' => $row['ID'], 'child' => array());
-
-                $child = self::_j_set($row['ID']);
-                if (count($child) > 0) {
-                    $node['child'] = array_merge($node['child'], $child);
-                }
-
-                $child = self::_j_folder($row['ID']);
-                if (count($child) > 0) {
-                    $node['child'] = array_merge($node['child'], $child);
-                }
-
-                array_push($data, $node);
-            }
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-    }
-
-    private static function _j_folder($id_j_folder)
-    {
-        $data = array();
-
-        $q = "select * from J_FOLDER where ID_PARENT=$id_j_folder and ARCH<>1 order by ORD";
-        $ds = base::ds($q, 'deco', 'UTF8');
-
-        if ($ds) {
-            while (base::by($ds, $row)) {
-
-                $node = array('caption' => $row['NAME'], 'ID_J_FOLDER' => $row['ID'], 'child' => array(), 'icon' => $row['VIEW_AS'] == 0 ? 'folder' : 'file');
-
-                if ($row['VIEW_AS'] == 0) {
-                    $child = self::_j_set($row['ID']);
-                    if (count($child) > 0) {
-                        $node['child'] = array_merge($node['child'], $child);
-                    }
-
-                    $child = self::_j_folder($row['ID']);
-                    if (count($child) > 0) {
-                        $node['child'] = array_merge($node['child'], $child);
-                    }
-
-                } else {
-                    $node['viewAs'] = 'jaluzi';
-                }
-
-                array_push($data, $node);
-            }
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-    }
-
-    private static function _j_set($id_j_folder)
-    {
-        $data = array();
-
-        $q = "select * from J_SET where ID_J_FOLDER=$id_j_folder and PRINT=1 and ARCH<>1 order by ORD";
-        $ds = base::ds($q, 'deco', 'UTF8');
-
-        if ($ds) {
-            while (base::by($ds, $row)) {
-
-                $node = array('caption' => $row['NAME'], 'ID_J_SET' => $row['ID'], 'icon' => 'file', 'child' => array(), 'viewAs' => 'jaluzi');
-
-                //$child   = self::_chapters($row['ID_K_CHAPTER']);
-                //if (count($child)>0)
-                //    $node['child']=array_merge($node['child'],$child);
-
-                array_push($data, $node);
-            }
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-    }
-
-    private static function TKANI2()
-    {
-        $data = array();
-
-        $q = 'select * FROM `TX_SECTION` where  ARCH<>1 order by ORDER_NUM';
-        $ds = base::ds($q, 'deco', 'UTF8');
-        if ($ds) {
-            while (base::by($ds, $row)) {
-                $node = array('caption' => $row['CAPTION'], 'ID_TX_SECTION' => $row['ID_TX_SECTION'], 'child' => array());
-
-                $child = self::_tx_set($row['ID_TX_SECTION']);
-                if (count($child) > 0) {
-                    $node['child'] = array_merge($node['child'], $child);
-                }
-
-                /*
-                $child = self::_j_set($row['ID']);
-                if (count($child)>0)
-                $node['child']=array_merge($node['child'],$child);
-                 */
-                array_push($data, $node);
-            }
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-    }
-
-    private static function _tx_set($id_tx_section)
-    {
-        $data = array();
-
-        $q = "select * FROM `TX_SET` where ID_TX_SECTION = $id_tx_section and  ARCH<>1 order by ID_TX_SET";
-        $ds = base::ds($q, 'deco', 'UTF8');
-
-        if ($ds) {
-            while (base::by($ds, $row)) {
-
-                $node = array(
-                    'caption' => $row['CAPTION'],
-                    'id' => 'tx' . $row['ID_TX_SET'],
-                    'ID_TX_SET' => $row['ID_TX_SET'],
-                    'icon' => 'file', 'child' => array(),
-                    "viewAs" => 'tkani',
-                );
-
-                //$child   = self::_chapters($row['ID_K_CHAPTER']);
-                //if (count($child)>0)
-                //    $node['child']=array_merge($node['child'],$child);
-
-                array_push($data, $node);
-            }
-        } else {
-            console::log("Error [$q]", __FILE__, __LINE__);
-        }
-
-        return $data;
-    }
-
-}
-
-class XML_CATALOG_FAST
-{
-    static $XML_CATALOG_STR = '';
-
-    private static function getParams($str, $tag)
-    {
-        // GetParams - Получение параметров из тега XML
-        $res = array();
-
-        // выделяем строку параметров
-        $str = str_replace(chr(13) . chr(10), '', $str);
-
-        // /^<msg]*<msg([^<]*)>(.*)/'
-        $templ = '/[^<' . $tag . ']*<' . $tag . '([^<]*)>(.*)/';
-
-        if (preg_match($templ, $str, $match)) {
-            // выделяем параметры и значения в хеш
-            $params = $match[1];
-            $templ = '/[ ]*([^=\"]*)[ ]*=[ ]*"([^=\"]*)"/';
-            if (preg_match_all($templ, $params, $match)) {
-                $len = count($match[0]);
-                for ($i = 0; $i < $len; $i++) {
-                    $mean = $match[1][$i];
-                    $value = $match[2][$i];
-                    $res[$mean] = $value;
-                };
-            };
-        };
-        return $res;
-    }
-    /**
-     * предварительная загрузка и обрезка текста XML саталога
-     */
-    public static function load($xmlFileName, $catalog_id)
-    {
-        $str = file_get_contents($xmlFileName);
-
-        $begin = '<catalog id="' . $catalog_id . '"';
-        $end = '</catalog>';
-
-        $pos = strpos($str, $begin);
-
-        if ($pos !== false) {
-            $str = substr($str, $pos);
-
-            $pos = mb_strpos($str, $end);
-            if ($pos !== false) {
-                $str = substr($str, 0, $pos + mb_strlen($end));
-            }
-
-        }
-
-        self::$XML_CATALOG_STR = $str;
-
-    }
-    /**
-     * поиск дополнительных узлов в xml каталоге по id и is_chapter:numer
-     */
-    public static function find($id, $is_chapter)
-    {
-
-        $str = self::$XML_CATALOG_STR;
-        $off = 0;
-        $res = array();
-        for ($loop = 0; $loop < 100; $loop++) {
-
-            $matches = null;
-            if (preg_match('/<node.*is_chapter="' . $is_chapter . '"\\sid="' . $id . '"/', $str, $matches, PREG_OFFSET_CAPTURE, $off) === 1) {
-
-                $node = $matches[0][0] . '/>';
-                $prm = self::getParams($node, 'node');
-
-                if ($prm['file'] !== '') {
-
-                    $cbool = true;
-                    for ($j = 0; $j < count($res); $j++) {
-
-                        if ($prm['file'] === $res[$j]['FILE']) {
-                            $cbool = false;
-                            break;
-                        };
-
-                    };
-
-                    if ($cbool) {
-                        array_push($res, $prm);
-                    }
-                    //;$prm = array(name:string,file:string)
-                }
-
-                $off = $matches[0][1] + 1;
-            } else {
-                break;
-            }
-
-        };
-
-        return $res;
     }
 
 }

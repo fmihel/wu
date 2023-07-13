@@ -52,7 +52,7 @@ try {
 
     }
 
-} catch (Exception $e) {
+} catch (\Exception $e) {
     console::log("Error: " . $e->getMessage(), __FILE__, __LINE__);
     echo RESULT_ERROR;
     exit;
