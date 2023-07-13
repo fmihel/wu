@@ -79,7 +79,7 @@ class CREATE_FULL_TREE_UTILS
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return array('res' => 1, 'data' => $out);
@@ -127,7 +127,7 @@ class CREATE_FULL_TREE_UTILS
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $out;
@@ -210,7 +210,7 @@ class CREATE_FULL_TREE_UTILS
             }
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -288,7 +288,7 @@ class CREATE_FULL_TREE_UTILS
                             ));
                         }
                     } else {
-                        _LOG("Error [...]", __FILE__, __LINE__);
+                        console::log("Error [...]", __FILE__, __LINE__);
                     }
 
                 } else {
@@ -303,7 +303,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -375,7 +375,7 @@ class CREATE_FULL_TREE_UTILS
                                 array_push($data, $node);
                             }
                         } else {
-                            _LOG("Error [...]", __FILE__, __LINE__);
+                            console::log("Error [...]", __FILE__, __LINE__);
                         }
 
                     } else {
@@ -413,7 +413,7 @@ class CREATE_FULL_TREE_UTILS
             }
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -501,7 +501,7 @@ class CREATE_FULL_TREE_UTILS
 
                             }
                         } else {
-                            _LOG("Error [$q]", __FILE__, __LINE__);
+                            console::log("Error [$q]", __FILE__, __LINE__);
                         }
 
                     } else {
@@ -521,7 +521,7 @@ class CREATE_FULL_TREE_UTILS
             };
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -552,7 +552,7 @@ class CREATE_FULL_TREE_UTILS
 
         $q = "select ID_C_MEDIA_FILE,CAPTION,PATH_WWW,PROCESSING_KIND from C_MEDIA_FILE where OWNER_ID = $OWNER_ID and OWNER_KIND = $OWNER_KIND and ARCH<>1 order by PROCESSING_KIND,NOM_PP ";
         if ($id == '362') {
-            _LOG("[$q]", __FILE__, __LINE__);
+            console::log("[$q]", __FILE__, __LINE__);
 
         }
         $PROCESSING_KIND = -1;
@@ -575,7 +575,7 @@ class CREATE_FULL_TREE_UTILS
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         $out = array();
@@ -707,10 +707,10 @@ class CREATE_FULL_TREE_UTILS
             $q .= 'mt.id_k_model=' . $id;
         }
 
-        //_LOG("[$q]",__FILE__,__LINE__);
+        //console::log("[$q]",__FILE__,__LINE__);
 
         //if (!base::ds($q,'deco'))
-        //    _LOG("ERROR[$q]",__FILE__,__LINE__);
+        //    console::log("ERROR[$q]",__FILE__,__LINE__);
 
         if ($onlyCount) {
             return intval(base::value($q, 'C', 0, 'deco'));
@@ -743,7 +743,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -779,7 +779,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -804,7 +804,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -833,7 +833,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;
@@ -864,7 +864,7 @@ class CREATE_FULL_TREE_UTILS
                 array_push($data, $node);
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $data;

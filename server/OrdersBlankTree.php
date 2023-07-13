@@ -1,4 +1,6 @@
 <?php
+use fmihel\config\Config;
+
 const NOT_USE_FIELD = [
     'LAST_MODIFY', 'DATE_CREATE', 'CAPTION', 'ID_CTLG_NODE',
 ];
@@ -37,7 +39,7 @@ class OrdersBlankTree
         $out = '[' . $out . ']';
         //--------------------------------------------------------------
 
-        $filename = WS_CONF::GET('orders-blank-tree');
+        $filename = Config::get('orders-blank-tree');
         file_put_contents($filename, 'var orders_blank_tree=' . $out . ';');
         //--------------------------------------------------------------
 

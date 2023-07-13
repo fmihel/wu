@@ -1,4 +1,7 @@
 <?php
+
+use fmihel\config\Config;
+
 /** ORDER_TEST - тестирование заказов.
  *
  */
@@ -17,7 +20,7 @@ WS_CONF::DEF('require_order_test', [
     '../../dev/source/common/order_jaluzi.php',
     '../../dev/source/common/jaluzi.php',
 ]);
-$require_order_test = WS_CONF::GET('require_order_test');
+$require_order_test = Config::get('require_order_test');
 foreach ($require_order_test as $file) {
     require_once $file;
 }
@@ -53,7 +56,7 @@ class ORDER_TEST
                     const ORDER_TEST_START = ' . $ORDER_TEST_START . ';
                     const ORDER_TEST_COUNT = ' . $ORDER_TEST_COUNT . ';
                     const COUNT_STEPS = ' . $COUNT_STEPS . ';
-                    const key = "' . WS_CONF::GET('key') . '";
+                    const key = "' . Config::get('key') . '";
                 </script>
                 <script src="./order_test.js"></script>
                 <style>

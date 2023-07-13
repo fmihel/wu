@@ -1,4 +1,10 @@
 <?php
+namespace wu\utils;
+
+use fmihel\base\Base;
+use fmihel\lib\Common;
+use fmihel\lib\Dir;
+
 /*
 SRCE_KIND = 1 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
 SRCE_KIND = 2 :    SRCE_ID соотвествует ID_K_MODEL из K_MODEL
@@ -10,23 +16,21 @@ SRCE_KIND = 10 :   SRCE_ID соотвествует  ID из J_FOLDER
 SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
  */
 
-use fmihel\lib\Dir;
+const SRCE_KIND = [
+    /* 0*/['table' => '', 'field' => 'SRCE_ID', 'media_kind' => 0],
+    /* 1*/['table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 1],
+    /* 2*/['table' => 'K_MODEL', 'field' => 'ID_K_MODEL', 'is_chapter' => false, 'media_kind' => 2],
+    /* 3*/['table' => '', 'field' => '', 'media_kind' => 3],
+    /* 4*/['table' => '', 'field' => '', 'media_kind' => 4],
+    /* 5*/['table' => '', 'field' => '', 'media_kind' => 5],
+    /* 6*/['table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 6],
+    /* 7*/['table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 7],
+    /* 8*/['table' => 'TX_SECTION', 'field' => 'ID_TX_SECTION', 'media_kind' => 8],
+    /* 9*/['table' => 'TX_SET', 'field' => 'ID_TX_SET', 'media_kind' => 9],
+    /*10*/['table' => 'J_FOLDER', 'field' => 'ID', 'media_kind' => 10],
+    /*11*/['table' => 'J_SET', 'field' => 'ID', 'media_kind' => 11],
 
-$SRCE_KIND = array(
-    /* 0*/array('table' => '', 'field' => 'SRCE_ID', 'media_kind' => 0),
-    /* 1*/array('table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 1),
-    /* 2*/array('table' => 'K_MODEL', 'field' => 'ID_K_MODEL', 'is_chapter' => false, 'media_kind' => 2),
-    /* 3*/array('table' => '', 'field' => '', 'media_kind' => 3),
-    /* 4*/array('table' => '', 'field' => '', 'media_kind' => 4),
-    /* 5*/array('table' => '', 'field' => '', 'media_kind' => 5),
-    /* 6*/array('table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 6),
-    /* 7*/array('table' => 'K_CHAPTER', 'field' => 'ID_K_CHAPTER', 'is_chapter' => true, 'media_kind' => 7),
-    /* 8*/array('table' => 'TX_SECTION', 'field' => 'ID_TX_SECTION', 'media_kind' => 8),
-    /* 9*/array('table' => 'TX_SET', 'field' => 'ID_TX_SET', 'media_kind' => 9),
-    /*10*/array('table' => 'J_FOLDER', 'field' => 'ID', 'media_kind' => 10),
-    /*11*/array('table' => 'J_SET', 'field' => 'ID', 'media_kind' => 11),
-
-);
+];
 
 /*
 Иконки узлов
@@ -48,7 +52,7 @@ $SRCE_KIND = array(
 15-Жалюзи сетка
  */
 
-$ICONS = array(
+const ICONS = [
     'root_karniz', //0
     'folder_karniz', //1
     'root_tkani', //2
@@ -79,10 +83,10 @@ $ICONS = array(
     'video_jaluzi', //25
     'video_elektro', //26
 
-);
+];
 
-$RUS_BUK = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
-$ENG_BUK = ['a', 'b', 'v', 'g', 'd', 'e', 'e', 'g', 'z', 'i', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'c', 'c', 's', 's', '', '', '', 'e', 'u', 'y'];
+const RUS_BUK = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
+const ENG_BUK = ['a', 'b', 'v', 'g', 'd', 'e', 'e', 'g', 'z', 'i', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'c', 'c', 's', 's', '', '', '', 'e', 'u', 'y'];
 
 class TREE_GENERATE
 {
@@ -90,57 +94,47 @@ class TREE_GENERATE
 
     public static function create($saveToFile = false, $saveToPhp = false)
     {
-        try {
-            $out = [];
+        $out = [];
 
-            $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
-            $ds = base::dsE($q, 'deco', self::$coding);
+        $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
+        $ds = Base::ds($q, 'deco', self::$coding);
 
-            $row = [];
-            while (base::by($ds, $row)) {
-                $out[] = self::_create($row, '');
-            }
+        while ($row = Base::read($ds)) {
+            $out[] = self::_create($row, '');
+        }
 
-            $out[] = [
-                'caption' => 'Личный кабинет',
-                'icon' => 'file',
+        $out[] = [
+            'caption' => 'Личный кабинет',
+            'icon' => 'file',
 
-                'id' => 'main_page',
-                'viewAs' => 'mainPage',
-                'subset' => [0],
-                'hash' => 'main',
+            'id' => 'main_page',
+            'viewAs' => 'mainPage',
+            'subset' => [0],
+            'hash' => 'main',
 
-            ];
+        ];
 
-            if ($saveToPhp) {
-                file_put_contents($saveToPhp, '<?php const FULL_TREE_CATALOG = [' . self::jsToPhp($out) . '];');
-            }
+        if ($saveToPhp) {
+            file_put_contents($saveToPhp, '<?php const FULL_TREE_CATALOG = [' . self::jsToPhp($out) . '];');
+        }
 
-            if ($saveToFile) {
+        if ($saveToFile) {
 
-                $json = ARR::to_json($out);
-                file_put_contents($saveToFile, 'var catalog2=' . $json . ';');
+            $json = Compatible::Arr_to_json($out);
+            file_put_contents($saveToFile, 'var catalog2=' . $json . ';');
 
-            } else {
-                return $out;
-            }
-
-        } catch (Exception $e) {
-
-            throw new Exception($e->getMessage());
-
+        } else {
+            return $out;
         }
 
     }
 
     private static function _create($node, $parent)
     {
-        global $SRCE_KIND;
-        global $ICONS;
 
         $ID = $node['SRCE_ID'];
 
-        $kind = $SRCE_KIND[$node['SRCE_KIND']];
+        $kind = SRCE_KIND[$node['SRCE_KIND']];
         $FIELD = $kind['field'];
         $TABLE = $kind['table'];
 
@@ -150,29 +144,28 @@ class TREE_GENERATE
         $out['table'] = $TABLE;
 
         $out['caption'] = self::stringCorrect($node['CAPTION']);
-        $out['icon'] = $ICONS[$node['ICON_IND']];
+        $out['icon'] = ICONS[$node['ICON_IND']];
         $out['SRCE_KIND'] = $node['SRCE_KIND'];
         $out['ID_ORDER_BLANK_TREE'] = $node['ID_ORDER_BLANK_TREE'];
         //$out['orders']=self::getOrderInfo($node['ID_ORDER_BLANK_TREE']);
 
         $out['hash'] = self::translit($parent, $node);
 
-        $out['media'] = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), COMMON::get($kind, 'media_kind', ''));
+        $out['media'] = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), Common::get($kind, 'media_kind', ''));
         //-------------------------------------------------------------------------------------------------------
         $q = 'select distinct ID_CTLG_SUBSET from CTLG_SUBSET_NODE where ID_CTLG_NODE = ' . $node['ID_CTLG_NODE'];
-        $ds = base::dsE($q, 'deco');
-        $row = [];
+        $ds = Base::ds($q, 'deco');
         $out['subset'] = [];
-        while (base::by($ds, $row)) {
+        while ($row = base::read($ds)) {
             $out['subset'][] = $row['ID_CTLG_SUBSET'];
         }
         //-------------------------------------------------------------------------------------------------------
 
         $child = [];
         $q = 'select * from CTLG_NODE where ID_PARENT = ' . $node['ID_CTLG_NODE'] . ' and  ARCH<>1 order by NOM_PP';
-        $ds = base::dsE($q, 'deco', self::$coding);
-        $row = [];
-        while (base::by($ds, $row)) {
+        $ds = Base::ds($q, 'deco', self::$coding);
+
+        while ($row = Base::read($ds)) {
             $child[] = self::_create($row, $out['hash']);
         }
 
@@ -245,10 +238,10 @@ class TREE_GENERATE
 
         }
         $PROCESSING_KIND = -1;
-        $ds = base::dsE($q, 'deco', self::$coding);
+        $ds = Base::ds($q, 'deco', self::$coding);
         if ($ds) {
             $row = [];
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
 
                 $row['CAPTION'] = self::stringCorrect($row['CAPTION']);
                 if ($PROCESSING_KIND !== $row['PROCESSING_KIND']) {
@@ -271,7 +264,7 @@ class TREE_GENERATE
                 }
             }
         } else {
-            //_LOG("Error [$q]",__FILE__,__LINE__);
+            //console::log("Error [$q]",__FILE__,__LINE__);
         }
         $out = [];
         if (count($view) > 0) {
@@ -306,7 +299,7 @@ class TREE_GENERATE
         $priceType = self::_typePrice($ID, $is_chapter);
 
         $q = "select SHOW_AS from $TABLE where $FIELD=$ID";
-        $show_as = base::valE($q, 0, 'deco');
+        $show_as = Base::value($q, 'deco', ['default' => 0]);
 
         $out['viewAs'] = self::_viewAs($show_as, $priceType);
 
@@ -354,7 +347,6 @@ class TREE_GENERATE
     /** возвращает букву определяющую тип прайса карнизов A или B */
     private static function _typePrice($id, $is_chapter)
     {
-
         $q = '
             select distinct
                 t.PRICELIST_KIND
@@ -377,14 +369,8 @@ class TREE_GENERATE
             $q .= 'mt.ID_K_MODEL=' . $id;
         }
 
-        return (base::valueE($q, 'PRICELIST_KIND', 1, 'deco') == 2 ? 'B' : 'A');
-        /*
-    if (MYSQL::Assigned($ds))
-    return ($ds->FieldByName('PRICELIST_KIND')==2);
-    return 'A';
+        return (Base::value($q, 'deco', ['default' => 1]) == 2 ? 'B' : 'A');
 
-    return self::priceBTovarList($id,$is_chapter,true)>0?'B':'A';
-     */
     }
     private static function idTovarPriceB($id, $is_chapter)
     {
@@ -418,7 +404,7 @@ class TREE_GENERATE
             $q .= 'mt.id_k_model=' . $id;
         }
 
-        return base::valueE($q, 'ID_K_TOVAR', '-1', 'deco', self::$coding);
+        return Base::value($q, 'deco', ['default' => -1]);
 
     }
 
@@ -430,8 +416,6 @@ class TREE_GENERATE
 
     private static function _translit($str): string
     {
-        global $RUS_BUK;
-        global $ENG_BUK;
 
         $out = trim(mb_strtolower($str));
         while (strpos($out, '  ') !== false) {
@@ -440,7 +424,7 @@ class TREE_GENERATE
 
         $out = str_replace([' '], ['_'], $out);
         $out = preg_replace('/[^a-zA-Zа-яА-Я0-9\_]/ui', '', $out);
-        $out = str_replace($RUS_BUK, $ENG_BUK, $out);
+        $out = str_replace(RUS_BUK, ENG_BUK, $out);
 
         return $out;
     }
@@ -449,15 +433,17 @@ class TREE_GENERATE
     {
         $out = [];
         if ($ID_ORDER_BLANK_TREE > 0) {
-            $q = 'SELECT *
-                from
-                    ORDERS_BLANK_TREE obt
-                    join
-                    ORDERS_KINDS ok on obt.ID_ORDER_KIND=ok.ID_ORDER_KIND
-                where
-                    obt.ID_ORDER_BLANK_TREE=' . $ID_ORDER_BLANK_TREE;
+            $q =
+                "SELECT *
+                    from
+                        ORDERS_BLANK_TREE obt
+                        join
+                        ORDERS_KINDS ok on obt.ID_ORDER_KIND=ok.ID_ORDER_KIND
+                    where
+                        obt.ID_ORDER_BLANK_TREE=$ID_ORDER_BLANK_TREE
+                ";
 
-            $row = base::row($q, 'deco', 'UTF8');
+            $row = Base::row($q, 'deco', 'utf8');
             //$caption = $row['NAME_FULL'].'/'.$row['CAPTION'];
             $kind = $row['ID_ORDER_KIND'];
 
@@ -510,7 +496,6 @@ class TREE_GENERATE
             }
 
         }
-        //error_log(print_r($js,true));
         return $php;
     }
 }

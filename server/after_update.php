@@ -22,6 +22,8 @@ require_once 'order_test.php';
 require_once 'OrdersBlankTree.php';
 require_once 'video_utils.php';
 
+use fmihel\config\Config;
+
 $out = array('res' => 0);
 
 //--------------------------------------------------------------------
@@ -84,7 +86,7 @@ if (isset($_REQUEST['runOrdersTests'])) {
 }
 
 //--------------------------------------------------------------------
-$catalogJsPath = __DIR__ . WS_CONF::GET('catalogJsPath');
+$catalogJsPath = __DIR__ . Config::get('catalogJsPath');
 //--------------------------------------------------------------------
 
 if (isset($_REQUEST['step'])) {
@@ -131,11 +133,11 @@ if (isset($_REQUEST['step'])) {
         //archAll::$mediaPath = '../../../../';
         //archAll::$mediaHttp = 'http://windeco.su/';
         //archAll::$zipPath = '../../../../download/catalog.zip';
-        arch::$path = WS_CONF::GET('arch_path');
-        arch::$catalogPath = WS_CONF::GET('arch_catalogPath');
-        arch::$mediaPath = WS_CONF::GET('arch_mediaPath');
-        arch::$mediaHttp = WS_CONF::GET('arch_mediaHttp');
-        arch::$zipPath = WS_CONF::GET('arch_zipPath');
+        arch::$path = Config::get('arch_path');
+        arch::$catalogPath = Config::get('arch_catalogPath');
+        arch::$mediaPath = Config::get('arch_mediaPath');
+        arch::$mediaHttp = Config::get('arch_mediaHttp');
+        arch::$zipPath = Config::get('arch_zipPath');
         arch::create();
         //echo arch::debug_info();
 
@@ -151,7 +153,7 @@ if (isset($_REQUEST['step'])) {
         $out['res'] = 1;
     } elseif ($step >= ($ORDER_TEST_START) && $step < $ORDER_TEST_START + $ORDER_TEST_COUNT) {
 
-        if (WS_CONF::GET('runOrdersTests', true))
+        if (Config::get('runOrdersTests', true))
         // запуск теста
         {
             ORDER_TEST::step($step - $COUNT_STEPS);

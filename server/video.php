@@ -1,17 +1,21 @@
 <?php
+namespace wu;
+
 /** обработчик для загружаемых видео */
 
+use fmihel\config\Config;
 use fmihel\console;
 use fmihel\lib\Common;
 use fmihel\lib\Dir;
 
 require_once 'init.php';
 
-$videoPath = WS_CONF::GET('videoPath');
-$videoUrl = WS_CONF::GET('videoUrl');
-$updatePath = WS_CONF::GET('UPDATE_ZIP_PATH');
+$videoPath = Config::get('videoPath');
+$videoUrl = Config::get('videoUrl');
+$updatePath = Config::get('UPDATE_ZIP_PATH');
 
-$reCreateCatalogJsUrl = WS_CONF::GET('url:after_update.php') . '?key=' . WS_CONF::GET('key') . '&step=3';
+$reCreateCatalogJsUrl = Common::join(Config::get('url:after_update.php'), ['key' => Config::get('key'), 'step' => 3]);
+console::log($reCreateCatalogJsUrl);
 
 try {
     /** проверка существования записи */

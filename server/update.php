@@ -1,4 +1,8 @@
 <?php
+namespace wu;
+
+use fmihel\console;
+use wu\utils\UPDATE_UTILS;
 
 /**
  * модуль пошагового применения обнолвения
@@ -37,7 +41,7 @@ if ($response['res'] == 1) {
     echo RESULT_OK;
 } else {
 
-    _LOG('result: ERROR', __FILE__, __LINE__);
+    console::log('result: ERROR', __FILE__, __LINE__);
     echo RESULT_ERROR;
     //echo '<errors>'.$response.'</errors>';
 

@@ -111,7 +111,7 @@ class CREATE_TREE_UTILS
             $catalog['karniz'] = array('data' => $karniz['data']);
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         $file = $path . '/catalog.js';
@@ -198,7 +198,7 @@ class CREATE_TREE_UTILS
             }
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         //---------------------------------------
@@ -251,7 +251,7 @@ class CREATE_TREE_UTILS
             cn.NOM_PP
         ';
 
-        //_LOG("id = $id ",__FILE__,__LINE__);
+        //console::log("id = $id ",__FILE__,__LINE__);
 
         $ds = base::ds($q, 'deco', 'UTF8');
 
@@ -260,7 +260,7 @@ class CREATE_TREE_UTILS
             $out = self::child2($row['ID_CTLG_NODE'], $id_ctlg_subset, $kind);
 
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return array('res' => 1, 'data' => $out);
@@ -357,7 +357,7 @@ class CREATE_TREE_UTILS
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $out;
@@ -441,7 +441,7 @@ class CREATE_TREE_UTILS
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::log("Error [$q]", __FILE__, __LINE__);
         }
 
         return $out;
@@ -550,7 +550,7 @@ class CREATE_TREE_UTILS
 
         $q = "select ID_C_MEDIA_FILE,CAPTION,PATH_WWW,PROCESSING_KIND from C_MEDIA_FILE where OWNER_ID = $OWNER_ID and OWNER_KIND = $OWNER_KIND and ARCH<>1 order by PROCESSING_KIND,NOM_PP ";
         if ($id == '362') {
-            //_LOG("[$q]",__FILE__,__LINE__);
+            //console::log("[$q]",__FILE__,__LINE__);
 
         }
         $PROCESSING_KIND = -1;
@@ -575,7 +575,7 @@ class CREATE_TREE_UTILS
 
             }
         } else {
-            //_LOG("Error [$q]",__FILE__,__LINE__);
+            //console::log("Error [$q]",__FILE__,__LINE__);
         }
         $out = array();
         if (count($view) > 0) {

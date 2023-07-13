@@ -20,6 +20,6 @@ if ($ds) {
     }
     echo '</list>';
 } else {
-    _LOG("Error [$q]", __FILE__, __LINE__);
+    console::log("Error [$q]", __FILE__, __LINE__);
     echo RESULT_ERROR;
 }

@@ -1,5 +1,8 @@
 <?php
+namespace wu\utils;
 
+use fmihel\base\Base;
+use fmihel\config\Config;
 use fmihel\console;
 use fmihel\lib\Dir;
 
@@ -8,14 +11,14 @@ class video_utils
     /** удаление неспользуемых видео */
     public static function clear()
     {
-        $videoPath = WS_CONF::GET('videoPath');
+        $videoPath = Config::get('videoPath');
         // строим относительный путь к папке с видео (добавляем в конец слеш)
         $path = Dir::slash(Dir::rel_path(__DIR__, $videoPath), false, true);
 
         try {
             // список всех нужных видео (из таблицы)
             $q = 'select PATH_WWW from C_MEDIA_FILE where PROCESSING_KIND = 4 and ARCH<>1';
-            $list = base::rowsE($q, 'deco');
+            $list = Base::rows($q, 'deco');
 
             // список всех файлов на диске
             $exists = Dir::files($path, '', true, false);

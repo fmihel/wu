@@ -1,6 +1,31 @@
 <?php
 //----------------------------------------------------------------------
 
+use fmihel\config\Config;
+
+define('RESULT_KEY', '<result>-1</result>');
+define('RESULT_OK', '<result>1</result>');
+define('RESULT_ERROR', '<result>0</result>');
+define('RESULT_PARAM', '<result>2</result>');
+define('RESULT_FILE_NOT_EXIST', '<result>3</result>');
+define('RESULT_BASE_REG', '<result>4</result>');
+
+//----------------------------------------------------------------------
+// define('HTTP_MEDIA','http://windeco.su/media/');
+define('HTTP_MEDIA', Config::get('HTTP_MEDIA'));
+// путь к папке с обновлениями
+// define('UPDATE_ZIP_PATH','../../../../source/update/');
+define('UPDATE_ZIP_PATH', Config::get('UPDATE_ZIP_PATH'));
+// путь куда распаковывается обновление
+// define('UNPACK_ZIP_PATH','../tmp/');
+define('UNPACK_ZIP_PATH', Config::get('UNPACK_ZIP_PATH'));
+// путь куда сохраняются файлы созданные из блоб
+//define('BIN_STORY_PATH','../../../../media/');
+define('BIN_STORY_PATH', Config::get('BIN_STORY_PATH'));
+// папка с видео
+define('HTTP_VIDEO', Config::get('videoUrl'));
+//----------------------------------------------------------------------
+
 // массив индексов таблиц
 $TABLE_INDEX = array(
     'AREA_ACT' => 'ID_AREA_ACT',

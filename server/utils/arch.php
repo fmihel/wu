@@ -1,19 +1,15 @@
 <?php
-/*
-if(!isset($Application)){
-require_once '../../../wsi/ide/ws/utils/application.php';
 
-$Application->LOG_ENABLE        = true;
-$Application->LOG_TO_ERROR_LOG  = false;
+namespace wu\utils;
 
-require_once UNIT('ws','ws.php');
-};
- */
-
+use fmihel\console;
+use fmihel\lib\Common;
+use fmihel\lib\Dir;
+use fmihel\lib\Str;
 use wu\server\zip\drivers\ZipStreamDriver;
 use wu\server\zip\Zip;
 
-require_once UNIT('utils', 'dir.php');
+require_once __DIR__ . '/Compatible.php';
 
 class arch
 {
@@ -73,9 +69,10 @@ class arch
     /** очистка папки с маршрутом */
     public static function clearTmp()
     {
-        $dir = APP::slash(self::$path, false, true);
-        if (DIR::exist($dir)) {
-            DIR::clear($dir);
+
+        $dir = Dir::slash(self::$path, false, true);
+        if (Dir::exist($dir)) {
+            Dir::clear($dir);
         }
 
         return true;
@@ -102,7 +99,7 @@ class arch
     private static function preTrans($text)
     {
 
-        $text = STR::replace_loop('  ', ' ', $text);
+        $text = Compatible::Str_replace_loop('  ', ' ', $text);
 
         $text = str_replace(
             array('&quot;', '.', ',', '-', ' '),
@@ -110,7 +107,7 @@ class arch
             $text
         );
 
-        $text = STR::replace_loop('__', '_', $text);
+        $text = Compatible::Str_replace_loop('__', '_', $text);
         return $text;
     }
 
@@ -122,7 +119,7 @@ class arch
             for ($i = 0; $i < count($catalog); $i++) {
                 $item = $catalog[$i];
 
-                $child = COMMON::get($item, 'child', null);
+                $child = Common::get($item, 'child', null);
                 $name = self::preTrans($item['caption']);
                 $name = self::trans($name);
                 $download = ((isset($item['media'])) && (isset($item['media']['download'])) && (gettype($item['media']['download']) === 'array')) ? $item['media']['download'] : array();
@@ -135,7 +132,7 @@ class arch
 
                         if (!mkdir($createPath, 0777, true)) {
                             $can = false;
-                            //_LOGF('mkdir("'.$createPath.'")','error',__FILE__,__LINE__);
+                            //console::log('mkdir("'.$createPath.'")','error',__FILE__,__LINE__);
                         }
                     }
 
@@ -145,11 +142,11 @@ class arch
 
                             $file = $download[$k]['PATH_WWW'];
                             $from = self::$mediaPath . str_replace(self::$mediaHttp, '', $file);
-                            $file = self::crop($file, 20, 'file');
-                            $to = APP::slash($createPath, false, true) . APP::get_file($file);
+                            $file = self::crop($file, 20);
+                            $to = Dir::slash($createPath, false, true) . Compatible::App_get_file($file);
 
                             if (!@copy($from, $to)) {
-                                _LOGF(array($from, $to), 'error copy', __FILE__, __LINE__);
+                                console::log(array($from, $to), 'error copy', __FILE__, __LINE__);
                             }
 
                         }
@@ -165,19 +162,19 @@ class arch
     /** создание структуры каталога */
     public static function createStruct()
     {
-        self::$path = APP::slash(self::$path, false, false);
+        self::$path = Dir::slash(self::$path, false, false);
 
-        if (!DIR::exist(self::$path)) {
+        if (!Dir::exist(self::$path)) {
             mkdir(self::$path);
         }
 
         $json = file_get_contents(self::$catalogPath);
         $json = str_replace('var catalog2=', '', $json);
 
-        $catalog = ARR::from_json_ex($json);
+        $catalog = Compatible::Arr_from_json_ex($json);
         //$catalog = $catalog['dealers']['data'];
 
-        //_LOGF($catalog[0]['child'][0],'catalog',__FILE__,__LINE__,'arr:2,deep:8,str:0');
+        //console::log($catalog[0]['child'][0],'catalog',__FILE__,__LINE__,'arr:2,deep:8,str:0');
 
         self::_createStruct(self::$path . self::$catalog, $catalog);
 
@@ -187,10 +184,10 @@ class arch
     /** архивирование */
     public static function zip()
     {
-        $file = (self::$zipPath === '' ? APP::slash(self::$path, false, true) . APP::slash(self::$catalog, false, false) . '.zip' : self::$zipPath);
+        $file = (self::$zipPath === '' ? Dir::slash(self::$path, false, true) . Dir::slash(self::$catalog, false, false) . '.zip' : self::$zipPath);
 
-        $catalogPath = APP::slash(self::$path, false, true);
-        $files = DIR::files($catalogPath, 'xls,xlsx', false, false);
+        $catalogPath = Dir::slash(self::$path, false, true);
+        $files = Dir::files($catalogPath, 'xls,xlsx', false, false);
 
         $driver = new ZipStreamDriver();
         $zip = new Zip($driver);
@@ -202,7 +199,7 @@ class arch
             }
             $zip->close();
         } else {
-            _LOGF('zip->create("' . $file . '")', 'error', __FILE__, __LINE__);
+            console::log('zip->create("' . $file . '")', 'error', __FILE__, __LINE__);
             return false;
         }
         return true;
@@ -210,16 +207,12 @@ class arch
     /**
      * обрезка имени (папки или файла)
      */
-    private static function crop($value, $maxlen = 20, $type = 'file')
+    private static function crop($value, $maxlen = 20)
     {
-        if ($type === 'file') {
-            if (strlen($value) > $maxlen + 5) {
-                $info = APP::pathinfo($value);
-                //$value = substr($info['filename'],0,$maxlen).STR::random(5).$info['extension'];
-                $value = substr($info['filename'], 0, $maxlen) . '_' . STR::random(4) . '.' . $info['extension'];
-            }
-        } else {
-            $value = substr($value, 0, $maxlen) . STR::random(5) . $info['ext'];
+        if (strlen($value) > $maxlen + 5) {
+            $info = Compatible::App_pathinfo($value);
+            //$value = substr($info['filename'],0,$maxlen).STR::random(5).$info['extension'];
+            $value = substr($info['filename'], 0, $maxlen) . '_' . Str::random(4) . '.' . $info['extension'];
         }
         return $value;
     }

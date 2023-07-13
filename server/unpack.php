@@ -18,7 +18,7 @@ if (!isset($_REQUEST['file'])) {
 $file = UPDATE_ZIP_PATH . $_REQUEST['file'];
 /*------------------------------------------*/
 if (!file_exists($file)) {
-    _LOG('file not exists :' . $file, __FILE__, __LINE__);
+    console::log('file not exists :' . $file, __FILE__, __LINE__);
 
     echo RESULT_FILE_NOT_EXIST;
     exit;
@@ -30,7 +30,7 @@ if (!file_exists($file)) {
 $q = "insert into UPDATE_LIST (CFILENAME,CDATE,CSTATE,CCOMMENT) value ('" . $_REQUEST['file'] . "',CURRENT_TIMESTAMP,1,'')";
 
 if (!\base::query($q, 'deco')) {
-    _LOG(\base::error('deco') . "[$q]", __FILE__, __LINE__);
+    console::log(\base::error('deco') . "[$q]", __FILE__, __LINE__);
     echo RESULT_BASE_REG;
     exit;
 }
@@ -53,7 +53,7 @@ try {
     }
 
 } catch (Exception $e) {
-    _LOG("Error: " . $e->getMessage(), __FILE__, __LINE__);
+    console::log("Error: " . $e->getMessage(), __FILE__, __LINE__);
     echo RESULT_ERROR;
     exit;
 }
