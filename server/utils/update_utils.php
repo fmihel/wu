@@ -556,7 +556,7 @@ class UPDATE_UTILS
                 $str = $bdr->gets();
             };
 
-            array_push($data, $VALUES);
+            $data[] = $VALUES;
             $count_recs--;
             $str = $bdr->gets();
 

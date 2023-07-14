@@ -48,16 +48,14 @@ class Bdr
                 $type = isset($field['fieldtype']) ? trim(strtoupper($field['fieldtype'])) : 'STRING';
                 $width = isset($field['WIDTH']) ? $field['WIDTH'] : '0';
 
-                array_push($this->info,
-                    array(
-                        'NAME' => $name,
-                        'TYPE' => $type,
-                        'WIDTH' => $width,
-                    ));
+                $this->info[] =
+                    [
+                    'NAME' => $name,
+                    'TYPE' => $type,
+                    'WIDTH' => $width,
+                ];
 
-                array_push($this->fields, array(
-                    'name' => $name,
-                ));
+                $this->fields[] = ['name' => $name];
             }
         };
 

@@ -208,9 +208,8 @@ class TREE_GENERATE
 
     private static function karniz($row)
     {
-        global $SRCE_KIND;
-        $out = array();
-        $kind = $SRCE_KIND[$row['SRCE_KIND']];
+        $out = [];
+        $kind = SRCE_KIND[$row['SRCE_KIND']];
 
         $ID = $row['SRCE_ID'];
         $FIELD = $kind['field'];
@@ -232,7 +231,7 @@ class TREE_GENERATE
 
     private static function jaluzi($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'jaluzi';
 
         return $out;
@@ -240,7 +239,7 @@ class TREE_GENERATE
 
     private static function tkani($row)
     {
-        $out = array();
+        $out = [];
         $out['viewAs'] = 'tkani';
         return $out;
     }

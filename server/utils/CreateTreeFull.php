@@ -290,14 +290,14 @@ class CreateTreeFull
                                     "viewAs" => self::_viewAs($row['SHOW_AS'], $typePrice),
                                     'media' => $media,
                                 );
-                                array_push($data, $node);
+                                $data[] = $node;
                             }
                         } else {
                             console::log("Error [...]", __FILE__, __LINE__);
                         }
 
                     } else {
-                        $node = array(
+                        $node = [
                             'caption' => $row['CAPTION'],
                             'IS_CHAPTER' => 1,
                             'ID' => $row['ID_K_CHAPTER'],
@@ -305,8 +305,8 @@ class CreateTreeFull
                             'icon' => 'file',
                             'viewAs' => self::_viewAs($row['SHOW_AS'], $typePrice),
                             'media' => $media,
-                        );
-                        array_push($data, $node);
+                        ];
+                        $data[] = $node;
                     }
 
                 }
@@ -326,7 +326,7 @@ class CreateTreeFull
             $node['icon']='file';
             $node['viewAs'] = 'karniz'.$typePrice;
             }
-            array_push($data,$node);
+            $data[]= $node;
              */
             }
 
@@ -435,7 +435,7 @@ class CreateTreeFull
 
                 }
 
-                array_push($data, $node);
+                $data[] = $node;
             };
 
         } else {

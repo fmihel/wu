@@ -10,7 +10,7 @@ use wu\server\zip\drivers\ZipStreamDriver;
 use wu\server\zip\Zip;
 
 require_once __DIR__ . '/Compatible.php';
-
+require_once __DIR__ . '/../zip/Zip.php';
 class arch
 {
     /** Относительный путь к временной папке, куда будет создаваться структура каталога */
@@ -120,7 +120,8 @@ class arch
                 $item = $catalog[$i];
 
                 $child = Common::get($item, 'child', null);
-                $name = self::preTrans($item['caption']);
+
+                $name = isset($item['caption']) ? self::preTrans($item['caption']) : 'noname';
                 $name = self::trans($name);
                 $download = ((isset($item['media'])) && (isset($item['media']['download'])) && (gettype($item['media']['download']) === 'array')) ? $item['media']['download'] : array();
 

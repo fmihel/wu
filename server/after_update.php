@@ -60,6 +60,7 @@ if (isset($_REQUEST['step'])) {
     define("CATALOG_LAST_UPDATE_DATE","' . date('d/m/Y H:i') . '");
     define("CATALOG_JS_CACHE","' . md5(file_get_contents(Dir::join([$catalogJsPath, 'catalog.js']))) . '");'
         );
+
         $out['res'] = 1;
 
     } elseif ($step == 2) { //--------------------------------------------------------------------
