@@ -171,10 +171,10 @@ class Compatible
 
         $count = strlen($str);
 
-        $root = array(); // верхний уровень создаваемого массива
+        $root = []; // верхний уровень создаваемого массива
         $current =  &$root; // текущий заполняемый уровень
         $parent = null; // родительский уровень
-        $buffer = array(); // дерево уровней и параметров к ним
+        $buffer = []; // дерево уровней и параметров к ним
 
         $key = false; // текущий ключь (имя переменной)
         $val = false; // текущее значение переменной
@@ -209,11 +209,11 @@ class Compatible
                 // создаем новый дочерний элемент
                 if ($key !== false) {
 
-                    $current[$key] = array();
+                    $current[$key] = [];
                     $current =  &$current[$key];
 
                 } else {
-                    $current[] = array();
+                    $current[] = [];
                     $current =  &$current[count($current) - 1];
                 }
 
@@ -499,7 +499,7 @@ class Compatible
         if (is_array($res)) {
             self::Common_json_id($res, $STR);
         } else {
-            $res = array();
+            $res = [];
         }
 
         return $res;
