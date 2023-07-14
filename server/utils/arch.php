@@ -200,7 +200,7 @@ class arch
             }
             $zip->close();
         } else {
-            console::log('zip->create("' . $file . '")', 'error', __FILE__, __LINE__);
+            console::error('zip->create("' . $file . '")');
             return false;
         }
         return true;
