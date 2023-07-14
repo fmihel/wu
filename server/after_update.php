@@ -15,7 +15,7 @@ namespace wu;
 
 require_once __DIR__ . '/init.php';
 require_once __DIR__ . '/utils/CreateTree.php';
-require_once __DIR__ . '/utils/createTreeFull.php';
+require_once __DIR__ . '/utils/CreateTreeFull.php';
 require_once __DIR__ . '/utils/tree_generate.php';
 require_once __DIR__ . '/utils/arch.php';
 require_once __DIR__ . '/utils/video_utils.php';
