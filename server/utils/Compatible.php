@@ -4,8 +4,8 @@ namespace wu\utils;
 use fmihel\lib\Dir;
 use fmihel\lib\Type;
 
-const COMMON_TYPE_STRING=      "[@str13]:";
-const COMMON_TYPE_STRING_LEN=    "9";
+const COMMON_TYPE_STRING = "[@str13]:";
+const COMMON_TYPE_STRING_LEN = "9";
 const UC_FROM = ['\\'];
 const UC_TO = ["\u005C"];
 
@@ -125,11 +125,12 @@ class Compatible
         }
         return false;
     }
-    
-    public static function Common_pre_json($str){
+
+    public static function Common_pre_json($str)
+    {
         //S:Подготавливает utf8 строку для парсинга json
         //R: string
-        return str_replace(UC_FROM,UC_TO,$str);
+        return str_replace(UC_FROM, UC_TO, $str);
     }
     /**
      * расширенный вариант для парсинга json в строке
@@ -378,7 +379,6 @@ class Compatible
                         }
 
                     } else {
-                        )
                         if (Type::is_numeric($Value, true)) {
                             $res .= '"' . $Name . '":' . $Value;
                         } else {
@@ -410,12 +410,7 @@ class Compatible
                         $res .= self::Arr_to_json($arr[$i], $refactoring, $level + 1, $param);
                     } else {
                         if (is_bool($arr[$i])) {
-                            if ($arr[$i]) {
-                                $res .= '"' . $Name . '":true';
-                            } else {
-                                $res .= '"' . $Name . '":false';
-                            }
-
+                            $res .= ($arr[$i] ? 'true' : 'false');
                         } else if (Type::is_numeric($arr[$i], true)) {
                             $res .= $arr[$i];
                         } else {
@@ -465,51 +460,79 @@ class Compatible
         return $path['extension'];
     }
 
-    public static function Arr_from_json($json){
-        
+    public static function Arr_from_json($json)
+    {
+
         //---------------------------------------------------
         // ВНИМАНИЕ!  значения свойств массивов не должны содержать { " ' , и пробелы
         //  (все это экранируем)
         //---------------------------------------------------
-        
-        
-        //---------------------------------------------------        
+
+        //---------------------------------------------------
         /*убрали все пробелы*/
         //---------------------------------------------------
-        $json = str_replace("\n",'',$json);
-        while (mb_strpos($json,' ')!==false)
-            $json=str_replace(' ','',$json);
+        $json = str_replace("\n", '', $json);
+        while (mb_strpos($json, ' ') !== false) {
+            $json = str_replace(' ', '', $json);
+        }
 
         //---------------------------------------------------
         /*убрали все ковычки*/
         //---------------------------------------------------
-        $json = str_replace(array('"',"'"),'',$json);
+        $json = str_replace(array('"', "'"), '', $json);
 
-        $json = STR::replace_last(';','',$json);
+        $json = self::Str_replace_last(';', '', $json);
 
         //---------------------------------------------------
         /* добавили ковычки для выполнения стандарта JSON*/
         //---------------------------------------------------
         //$json = preg_replace('/[[:word:]\#\.]+/','"\\0"',$json);
         //echo '<xmp>'.$json.'</xmp>';
-        $json = preg_replace('/[^\{\}\:\,\[\]]+/','"\\0"',$json);
-    
+        $json = preg_replace('/[^\{\}\:\,\[\]]+/', '"\\0"', $json);
+
         //echo ''.$json.'';
         //exit;
         //---------------------------------------------------
         //---------------------------------------------------
-        
-        $res = json_decode($json,true);
-        if (is_array($res))
-            self::_json_id($res,$STR);
-        else 
+
+        $res = json_decode($json, true);
+        if (is_array($res)) {
+            self::Common_json_id($res, $STR);
+        } else {
             $res = array();
-            
-            
+        }
+
         return $res;
 
     }
-    
+    private static function Common_json_id(&$json, &$STR)
+    {
+        foreach ($json as $k => $v) {
+            if (is_array($v)) {
+                self::Common_json_id($v, $STR);
+                $json[$k] = $v;
+            } else {
+                if (isset($STR[$v])) {
+                    $json[$k] = str_replace('"', '', $STR[$v]);
+                }
+            }
+        }
+    }
+    static function Str_replace_last($search, $replace, $text)
+    {
+        /*перезаписывает $search если он находится в конце строки*/
+
+        $_text = trim($text);
+        $pos = mb_strrpos($_text, $search);
+
+        if (($pos !== false) && (($pos + mb_strlen($search)) == mb_strlen($_text))) {
+            return mb_substr($_text, 0, $pos) . $replace;
+        } else {
+            return $text;
+        }
+
+    }
+
 }
 
 Compatible::$PATH = Dir::slash(dirname($_SERVER['SCRIPT_FILENAME']), false, true);

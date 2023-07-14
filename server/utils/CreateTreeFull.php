@@ -5,49 +5,9 @@ use fmihel\base\Base;
 use fmihel\console;
 use fmihel\lib\Common;
 
-require_once __DIR__ . './XmlCatalogFast.php';
-
-/*
-SRCE_KIND = 1 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
-SRCE_KIND = 2 :    SRCE_ID соотвествует ID_K_MODEL из K_MODEL
-SRCE_KIND = 6 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
-SRCE_KIND = 7 :    SRCE_ID соотвествует ID_K_CHAPTER из K_CHAPTER
-SRCE_KIND = 8 :    SRCE_ID соотвествует  ID_TX_SECTION из TX_SECTION
-SRCE_KIND = 9 :    SRCE_ID соотвествует  ID_TX_SET из TX_SET
-SRCE_KIND = 10 :   SRCE_ID соотвествует  ID из J_FOLDER
-SRCE_KIND = 11 :   SRCE_ID соотвествует  ID из J_SET
-
-$SRCE_KIND = array(
-array('table'=>'','field'=>''),//0
-array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER','is_chapter'=>true,'media_kind'=>2),//1
-array('table'=>'K_MODEL',       'field'=>'ID_K_MODEL',  'is_chapter'=>false,'media_kind'=>1),//2
-array('table'=>'',              'field'=>''),//3
-array('table'=>'',              'field'=>''),//4
-array('table'=>'',              'field'=>''),//5
-array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>2),//6
-array('table'=>'K_CHAPTER',     'field'=>'ID_K_CHAPTER', 'is_chapter'=>true,'media_kind'=>2),//7
-array('table'=>'TX_SECTION',    'field'=>'ID_TX_SECTION','media_kind'=>0),//8
-array('table'=>'TX_SET',        'field'=>'ID_TX_SET','media_kind'=>0),//9
-array('table'=>'J_FOLDER',      'field'=>'ID','media_kind'=>0),//10
-array('table'=>'J_SET',         'field'=>'ID','media_kind'=>0),//11
-
-);
-$ICONS = array(
-'folder',//0
-'folder',//1
-'folder',//2
-'folder',//3
-'folder',//4
-'folder',//5
-'file',//6
-'file',//7
-'file',//8
-'folder',//9
-'folder',//10
-
-);
-define('SRCE_MODEL',2);
- */
+require_once __DIR__ . '/XmlCatalogFast.php';
+require_once __DIR__ . '/Compatible.php';
+require_once __DIR__ . '/consts.php';
 
 class CreateTreeFull
 {
@@ -99,7 +59,7 @@ class CreateTreeFull
 
         $out = [];
         $q = "select * from CTLG_NODE where ID_PARENT = $id_parent and  ARCH<>1 order by NOM_PP";
-        $ds = Base::ds($q, 'deco', 'utf8s');
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         if ($ds) {
             while ($row = Base::read($ds)) {
@@ -510,8 +470,7 @@ class CreateTreeFull
 
         $q = "select ID_C_MEDIA_FILE,CAPTION,PATH_WWW,PROCESSING_KIND from C_MEDIA_FILE where OWNER_ID = $OWNER_ID and OWNER_KIND = $OWNER_KIND and ARCH<>1 order by PROCESSING_KIND,NOM_PP ";
         if ($id == '362') {
-            console::log("[$q]", __FILE__, __LINE__);
-
+            //console::log("[$q]", __FILE__, __LINE__);
         }
         $PROCESSING_KIND = -1;
         $ds = Base::ds($q, 'deco', 'utf8');

@@ -1,6 +1,12 @@
 <?php
+namespace wu;
 
+use fmihel\base\Base;
 use fmihel\config\Config;
+use fmihel\console;
+use fmihel\lib\Common;
+use wu\utils\Compatible;
+use wu\utils\Mail;
 
 /** ORDER_TEST - тестирование заказов.
  *
@@ -25,7 +31,7 @@ $require_order_test = Config::get('require_order_test');
 foreach ($require_order_test as $file) {
     require_once $file;
 }
-
+require_once __DIR__ . '/utils/Mail.php';
 //-------------------------------
 /** иммитация сессии */
 class session
@@ -108,9 +114,9 @@ class ORDER_TEST
     public static function count()
     {
         try {
-            return base::valE('select count(ID_ORDER) from ORDERS where FOR_TEST=1 and DELETED=0', 0, 'deco');
+            return Base::value('select count(ID_ORDER) from ORDERS where FOR_TEST=1 and DELETED=0', 'deco', ['default' => 0]);
         } catch (\Exception $e) {
-            error_log('Exception [' . __FILE__ . ':' . __LINE__ . '] ' . $e->getMessage());
+            console::error($e);
         };
         return 0;
     }
@@ -120,25 +126,25 @@ class ORDER_TEST
 
         try {
 
-            $orders = base::rowsE('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER', 'deco');
+            $orders = Base::rows('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER', 'deco');
             $order = $orders[$i];
             $test = self::test($order);
 
-            if (COMMON::get($test, 'result', 'msg', '') != '') {
+            if (Common::get($test, 'result', 'msg', '') != '') {
 
                 $test = array_merge(['ID_ORDER' => $order['ID_ORDER']], $test['result']);
                 $msg = $test['msg'];
                 unset($test['msg']);
 
-                $out = ARR::to_json($test, true, 0, ['left' => '&nbsp;&nbsp;&nbsp;&nbsp;', 'cr' => '<br>']);
+                $out = Compatible::Arr_to_json($test, true, 0, ['left' => '&nbsp;&nbsp;&nbsp;&nbsp;', 'cr' => '<br>']);
 
-                COMMON_UTILS::sendReportToAdmin([
+                Mail::sendToAdmin([
                     'msg' => 'Заказ N ' . $order['NOM_ORDER'] . ' не прошел тест.<br>' . $msg . '<br>' . $out,
                 ]);
             };
 
         } catch (\Exception $e) {
-            error_log('Exception [' . __FILE__ . ':' . __LINE__ . '] ' . $e->getMessage());
+            console::error($e);
         };
     }
     /** запуск теста*/
@@ -154,13 +160,13 @@ class ORDER_TEST
             ], $param);
 
             if (!$p['ID_ORDER']) {
-                throw new Exception("need ID_ORDER in ");
+                throw new \Exception("need ID_ORDER in ");
             }
 
             // создаем копию заказа ---------------------
             $copy = ORDER::crCopy($p['ID_ORDER']);
             if ($copy['res'] == 0) {
-                throw new Exception("ошибка создания копии");
+                throw new \Exception("ошибка создания копии");
             }
 
             // пометим заказа к удалению, на случай если что-то пойдет не так, то в в след разах его можно будет удалить
@@ -181,8 +187,8 @@ class ORDER_TEST
             return array_merge(['res' => 1], $out);
 
         } catch (\Exception $e) {
-            error_log('Exception [' . __FILE__ . ':' . __LINE__ . '] in ORDER_TEST::test(' . print_r($param, true) . ') ' . $e->getMessage());
-
+            console::error('ORDER_TEST::test(' . print_r($param, true) . ') ');
+            console::error($e);
             return ['res' => 0, 'msg' => $e->getMessage()];
         };
         return ['res' => 0];
@@ -192,8 +198,8 @@ class ORDER_TEST
     public static function reculcAllTest()
     {
         try {
-            $ds = base::dsE('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER', 'deco');
-            while ($order = base::read($ds)) {
+            $ds = Base::dsE('select * from ORDERS where FOR_TEST =1  and DELETED=0 order by ID_ORDER', 'deco');
+            while ($order = Base::read($ds)) {
                 self::reculc($order);
             }
 
@@ -211,11 +217,11 @@ class ORDER_TEST
         ], $param);
         try {
             if ($param['step'] >= 0) {
-                $rows = base::rowsE('select ID_ORDER from ORDERS where FOR_TEST=1  and DELETED=0 order by ID_ORDER', 'deco');
+                $rows = Base::rowsE('select ID_ORDER from ORDERS where FOR_TEST=1  and DELETED=0 order by ID_ORDER', 'deco');
                 $param['ID_ORDER'] = $rows[$param['step']]['ID_ORDER'];
             }
 
-            //$order = base::rowE('select * from ORDERS where ID_ORDER = '.$param['ID_ORDER'],'deco');
+            //$order = Base::rowE('select * from ORDERS where ID_ORDER = '.$param['ID_ORDER'],'deco');
             $data = ORDER::load($param['ID_ORDER']);
             ORDER::update($data, ['reculc' => 1, 'reculcSum' => 1, 'enableLock' => 0]);
 
@@ -234,7 +240,7 @@ class ORDER_TEST
 
                 $stepMsg = '';
                 $product = [
-                    'TEMPLATE_NAME' => base::valE('select NAME from J_FOLDER where ID=' . $from[$i]['panel']['ID_J_FOLDER'], 'undef', 'deco', 'UTF-8'),
+                    'TEMPLATE_NAME' => Base::valE('select NAME from J_FOLDER where ID=' . $from[$i]['panel']['ID_J_FOLDER'], 'undef', 'deco', 'UTF-8'),
                     'ID_J_PRODUCT' => $from[$i]['panel']['ID_J_PRODUCT'],
                     'ID_J_FOLDER' => $from[$i]['panel']['ID_J_FOLDER'],
                 ];

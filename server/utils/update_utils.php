@@ -5,6 +5,7 @@ namespace wu\utils;
  * утилиты к установке обновлений
  */
 require_once __DIR__ . '/Bdr.php';
+require_once __DIR__ . '/Compatible.php';
 
 use fmihel\base\Base;
 use fmihel\console;
