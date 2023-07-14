@@ -88,10 +88,10 @@ class arch
             'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я',
         );
         $lat = array(
-            'a', 'b', 'v', 'g', 'd', 'e', 'io', 'zh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p',
-            'r', 's', 't', 'u', 'f', 'h', 'ts', 'ch', 'sh', 'sht', 'a', 'i', 'y', 'e', 'yu', 'ya',
-            'A', 'B', 'V', 'G', 'D', 'E', 'Io', 'Zh', 'Z', 'I', 'Y', 'K', 'L', 'M', 'N', 'O', 'P',
-            'R', 'S', 'T', 'U', 'F', 'H', 'Ts', 'Ch', 'Sh', 'Sht', 'A', 'I', 'Y', 'e', 'Yu', 'Ya',
+            'a', 'b', 'v', 'g', 'd', 'e', 'e', 'j', 'z', 'i', 'i', 'k', 'l', 'm', 'n', 'o', 'p',
+            'r', 's', 't', 'u', 'f', 'h', 'c', 'ch', 'sh', 'sh', '', 'i', '', 'e', 'u', 'ya',
+            'A', 'B', 'V', 'G', 'D', 'E', 'E', 'J', 'Z', 'I', 'I', 'K', 'L', 'M', 'N', 'O', 'P',
+            'R', 'S', 'T', 'U', 'F', 'H', 'C', 'CH', 'SH', 'SH', '', 'I', '', 'E', 'U', 'YA',
         );
         return str_replace($cyr, $lat, $textcyr);
     }
@@ -121,7 +121,7 @@ class arch
 
                 $child = Common::get($item, 'child', null);
 
-                $name = isset($item['caption']) ? self::preTrans($item['caption']) : 'noname';
+                $name = self::preTrans($item['caption']);
                 $name = self::trans($name);
                 $download = ((isset($item['media'])) && (isset($item['media']['download'])) && (gettype($item['media']['download']) === 'array')) ? $item['media']['download'] : array();
 
@@ -147,7 +147,7 @@ class arch
                             $to = Dir::slash($createPath, false, true) . Compatible::App_get_file($file);
 
                             if (!@copy($from, $to)) {
-                                console::log(array($from, $to), 'error copy', __FILE__, __LINE__);
+                                console::error('copy from:' . $from . ' to:' . $to);
                             }
 
                         }
@@ -196,6 +196,10 @@ class arch
             for ($i = 0; $i < count($files); $i++) {
                 $from = $files[$i];
                 $to = str_replace(self::$path, '', $from);
+
+                $from = str_replace('//', '/', $from);
+                $to = str_replace('//', '/', $to);
+
                 $zip->add($from, $to);
             }
             $zip->close();
