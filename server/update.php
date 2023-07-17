@@ -13,8 +13,8 @@ use wu\utils\UPDATE_UTILS;
  * @return void
  */
 
-require_once 'init.php';
-require_once 'update_utils.php';
+require_once __DIR__ . '/init.php';
+require_once __DIR__ . '/utils/update_utils.php';
 
 if ((!isset($_REQUEST['table'])) || (!isset($_REQUEST['pos'])) || (!isset($_REQUEST['delta']))) {
 

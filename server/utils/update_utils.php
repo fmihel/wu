@@ -4,6 +4,7 @@ namespace wu\utils;
 /**
  * утилиты к установке обновлений
  */
+require_once __DIR__ . '/../consts.php';
 require_once __DIR__ . '/Bdr.php';
 require_once __DIR__ . '/Compatible.php';
 
@@ -395,7 +396,7 @@ class UPDATE_UTILS
         $space = '{%$space%}';
         //----------------------------------------------------------------------
         // масив существующих полей
-        $FIELDS_WEB = Base::fieldsInfo($bdr->table, true, 'deco');
+        $FIELDS_WEB = Base::fieldsInfo($bdr->table, 'deco', true);
         //----------------------------------------------------------------------
         // Поиск нужной записи
         if (!$bdr->moveTo($index)) {
@@ -580,7 +581,7 @@ class UPDATE_UTILS
         $TABLE = 'C_MEDIA_FILE';
         $FILENAME = 'PATH_WWW';
         $INDEX_NAME = $TABLE_INDEX[$TABLE];
-        $FIELDS_WEB = Base::fieldsInfo($TABLE, true, 'deco');
+        $FIELDS_WEB = Base::fieldsInfo($TABLE, 'deco', true);
 
         //----------------------------------------------------------------------
         $bdr = new Bdr($fileName . '.bdr');

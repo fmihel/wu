@@ -3,6 +3,7 @@ namespace wu\utils;
 
 use fmihel\lib\Dir;
 
+require_once __DIR__ . '/../consts.php';
 require_once __DIR__ . '/Compatible.php';
 
 class Bdr
@@ -28,7 +29,6 @@ class Bdr
 
     public function open($fileName)
     {
-        global $Application;
         global $TABLE_INDEX;
         //----------------------------------------------------------------------
         $this->table = Compatible::App_without_ext($fileName);
@@ -59,7 +59,7 @@ class Bdr
             }
         };
 
-        $this->id = $TABLE_INDEX[$this->table];
+        $this->id = isset($TABLE_INDEX[$this->table]) ? $TABLE_INDEX[$this->table] : 'undefined';
         $this->count = $this->xml->COUNT;
 
     }
