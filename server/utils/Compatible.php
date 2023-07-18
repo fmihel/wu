@@ -360,13 +360,22 @@ class Compatible
         };
 
         if (self::Type_is_assoc($arr)) {
+
+            $in_line = false;
+            // если массив короткий и состояит из простых значений, то выводим его без переносов
+            if (count(array_keys($arr)) < 6) {
+                $in_line = true;
+                foreach ($arr as $Name => $Value) {
+                    if (strlen($Name) > 15 || (!is_numeric($Value) && (!is_string($Value) || strlen($Value) > 10))) {
+                        $in_line = false;
+                        break;
+                    }
+                }
+            }
             $res = '{';
             foreach ($arr as $Name => $Value) {
-                if ($res !== '{') {
-                    $res .= ',';
-                }
 
-                $res .= $cr . $left;
+                $res .= ($res !== '{' ? ',' : '') . ($in_line ? '' : $cr . $left);
 
                 if (is_array($Value)) {
                     $res .= '"' . $Name . '":' . self::Arr_to_json($Value, $refactoring, $level + 1, $param) . '';
@@ -399,26 +408,42 @@ class Compatible
 
             $res = '[';
             if (is_array($arr)) {
-                for ($i = 0; $i < count($arr); $i++) {
-                    if ($res !== '[') {
-                        $res .= ',';
-                    }
-
-                    $res .= $cr . $left;
-
-                    if (is_array($arr[$i])) {
-                        $res .= self::Arr_to_json($arr[$i], $refactoring, $level + 1, $param);
-                    } else {
-                        if (is_bool($arr[$i])) {
-                            $res .= ($arr[$i] ? 'true' : 'false');
-                        } else if (Type::is_numeric($arr[$i], true)) {
-                            $res .= $arr[$i];
-                        } else {
-                            $res .= '"' . self::Common_pre_json($arr[$i]) . '"';
+                // если массив короткий и состояит из простых значений, то выводим его без переносов
+                $in_line = false;
+                if (count($arr) < 10) {
+                    $in_line = true;
+                    for ($i = 0; $i < count($arr); $i++) {
+                        if (!is_numeric($arr[$i]) && (!is_string($arr[$i]) || strlen($arr[$i]) > 10)) {
+                            $in_line = false;
+                            break;
                         }
-
                     }
                 };
+
+                if ($in_line) {
+                    for ($i = 0; $i < count($arr); $i++) {
+                        $res .= ($res !== '[' ? ',' : '') . $arr[$i];
+                    }
+                } else {
+                    for ($i = 0; $i < count($arr); $i++) {
+
+                        $res .= ($res !== '[' ? ',' : '') . $cr . $left;
+
+                        if (is_array($arr[$i])) {
+                            $res .= self::Arr_to_json($arr[$i], $refactoring, $level + 1, $param);
+                        } else {
+                            if (is_bool($arr[$i])) {
+                                $res .= ($arr[$i] ? 'true' : 'false');
+                            } else if (Type::is_numeric($arr[$i], true)) {
+                                $res .= $arr[$i];
+                            } else {
+                                $res .= '"' . self::Common_pre_json($arr[$i]) . '"';
+                            }
+
+                        }
+                    }
+                }
+                ;
             } else {
                 $res .= '"' . self::Common_pre_json($arr) . '"';
             }

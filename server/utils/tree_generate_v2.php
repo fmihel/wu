@@ -2,46 +2,55 @@
 namespace wu\utils;
 
 use fmihel\base\Base;
+use fmihel\console;
 use fmihel\lib\Common;
-use fmihel\lib\Dir;
 
 require_once __DIR__ . '/Compatible.php';
 require_once __DIR__ . '/consts.php';
 
-class TREE_GENERATE
+const F_CAPTION = 'caption';
+const F_ID = 'id';
+const F_CHILDS = 'childs';
+const F_DATA = 'data';
+const F_TYPE = 'type';
+const F_VIEW_AS = F_TYPE;
+const F_ICON = 'icon';
+const F_SUBSET = 'access';
+const F_LIST = 'list';
+/*
+const F_CAPTION = 'n';
+const F_ID = 'id';
+const F_CHILDS = 'c';
+const F_DATA = 'd';
+const F_TYPE = 't';
+const F_ICON = 'i';
+const F_SUBSET = 'a';
+ */
+class TREE_GENERATE_V2
 {
-    private static $coding = 'utf8';
 
-    public static function create($saveToFile = false, $saveToPhp = false)
+    private static $id = 0;
+    private static $custom_id = [];
+
+    public static function create($saveToFile = false, $param = [])
     {
+        $param = array_merge([
+            'varname' => 'CATALOG',
+        ], $param);
+
         $out = [];
 
         $q = 'select * from CTLG_NODE where ID_PARENT = 0 and  ARCH<>1 order by NOM_PP';
-        $ds = Base::ds($q, 'deco', self::$coding);
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         while ($row = Base::read($ds)) {
-            $out[] = self::_create($row, '');
-        }
-
-        $out[] = [
-            'caption' => 'Личный кабинет',
-            'icon' => 'file',
-
-            'id' => 'main_page',
-            'viewAs' => 'mainPage',
-            'subset' => [0],
-            'hash' => 'main',
-
-        ];
-
-        if ($saveToPhp) {
-            file_put_contents($saveToPhp, '<?php const FULL_TREE_CATALOG = [' . self::jsToPhp($out) . '];');
+            $out[] = self::_create($row);
         }
 
         if ($saveToFile) {
 
             $json = Compatible::Arr_to_json($out, true);
-            file_put_contents($saveToFile, 'var catalog2=' . $json . ';');
+            file_put_contents($saveToFile, 'const ' . $param['varname'] . '=' . $json . ';');
 
         } else {
             return $out;
@@ -49,67 +58,92 @@ class TREE_GENERATE
 
     }
 
-    private static function _create($node, $parent)
+    private static function _create($node)
     {
-
-        $ID = $node['SRCE_ID'];
-
-        $kind = SRCE_KIND[$node['SRCE_KIND']];
-        $FIELD = $kind['field'];
-        $TABLE = $kind['table'];
-
         $out = [];
-        $out['id'] = $node['ID_CTLG_NODE'];
-        $out[$FIELD] = $ID;
-        $out['table'] = $TABLE;
+        $data = [];
+        $ID = $node['SRCE_ID'];
+        $kind = SRCE_KIND[$node['SRCE_KIND']];
+        //$FIELD = $kind['field'];
+        //$TABLE = $kind['table'];
 
-        $out['caption'] = self::stringCorrect($node['CAPTION']);
-        $out['icon'] = ICONS[$node['ICON_IND']];
-        $out['SRCE_KIND'] = $node['SRCE_KIND'];
-        $out['ID_ORDER_BLANK_TREE'] = $node['ID_ORDER_BLANK_TREE'];
-        //$out['orders']=self::getOrderInfo($node['ID_ORDER_BLANK_TREE']);
+        $out[F_ID] = $node['ID_CTLG_NODE'];
+        //$out[$FIELD] = $ID;
+        //$out['table'] = $TABLE;
 
-        $out['hash'] = self::translit($parent, $node);
+        $out[F_CAPTION] = self::stringCorrect($node['CAPTION']);
+        $out[F_ICON] = ICONS[$node['ICON_IND']];
+        //$out['SRCE_KIND'] = $node['SRCE_KIND'];
+        //$out['ID_ORDER_BLANK_TREE'] = $node['ID_ORDER_BLANK_TREE'];
 
-        $out['media'] = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), Common::get($kind, 'media_kind', ''));
+        $media = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), Common::get($kind, 'media_kind', ''));
+        if (isset($media['gallery'])) {
+            foreach ($media['gallery'] as $item) {
+                $data[F_LIST][] = ['type' => 'img', 'url' => $item];
+            }
+        }
+        if (isset($media['video'])) {
+            foreach ($media['video'] as $item) {
+                $data[F_LIST][] = ['type' => 'video', 'url' => $item['PATH_WWW']];
+            }
+        }
+        //$out['media'] = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), Common::get($kind, 'media_kind', ''));
         //-------------------------------------------------------------------------------------------------------
         $q = 'select distinct ID_CTLG_SUBSET from CTLG_SUBSET_NODE where ID_CTLG_NODE = ' . $node['ID_CTLG_NODE'];
         $ds = Base::ds($q, 'deco');
-        $out['subset'] = [];
+        $out[F_SUBSET] = [];
         while ($row = base::read($ds)) {
-            $out['subset'][] = $row['ID_CTLG_SUBSET'];
+            $out[F_SUBSET][] = $row['ID_CTLG_SUBSET'];
         }
         //-------------------------------------------------------------------------------------------------------
 
         $child = [];
         $q = 'select * from CTLG_NODE where ID_PARENT = ' . $node['ID_CTLG_NODE'] . ' and  ARCH<>1 order by NOM_PP';
-        $ds = Base::ds($q, 'deco', self::$coding);
+        $ds = Base::ds($q, 'deco', 'utf8');
 
         while ($row = Base::read($ds)) {
-            $child[] = self::_create($row, $out['hash']);
+            $child[] = self::_create($row);
         }
 
-        if (isset($out['media']['video'])) {
+        //if (isset($out['media']['video'])) {
+        if (isset($media['video'])) {
             if (count($child) === 0) {
-                $out['viewAs'] = 'video';
+                $out[F_VIEW_AS] = 'viewer';
             }
 
         } elseif ($node['SRCE_KIND'] == 0) {
             if (count($child) === 0) {
-                $out['viewAs'] = 'gallery';
+                //$out['viewAs'] = 'gallery';
+                $out[F_TYPE] = 'viewer';
             }
 
-        } else if (($node['SRCE_KIND'] == 1) || ($node['SRCE_KIND'] == 2) || ($node['SRCE_KIND'] == 6) || ($node['SRCE_KIND'] == 7)) {
-            $out['IS_CHAPTER'] = ($kind['is_chapter'] ? 1 : 0);
-            $out = array_merge($out, self::karniz($node));
-        } else if (($node['SRCE_KIND'] == 8) || ($node['SRCE_KIND'] == 9)) {
-            $out = array_merge($out, self::tkani($node));
-        } else if (($node['SRCE_KIND'] == 10) || ($node['SRCE_KIND'] == 11)) {
-            $out = array_merge($out, self::jaluzi($node));
+        } elseif (($node['SRCE_KIND'] == 1) || ($node['SRCE_KIND'] == 2) || ($node['SRCE_KIND'] == 6) || ($node['SRCE_KIND'] == 7)) {
+            $karniz = self::karniz($node);
+            $data = array_merge_recursive($data, $karniz[F_DATA]);
+            unset($karniz[F_DATA]);
+            $out = array_merge($out, $karniz);
+
+        } elseif (($node['SRCE_KIND'] == 8) || ($node['SRCE_KIND'] == 9)) {
+            if (count($child) === 0) {
+                $out[F_TYPE] = 'tkani';
+                $data[$kind['field']] = $ID;
+            };
+        } elseif (($node['SRCE_KIND'] == 10) || ($node['SRCE_KIND'] == 11)) {
+            if (count($child) === 0) {
+                $out[F_TYPE] = 'jaluzi';
+                $data[$kind['field']] = $ID;
+                $data['IS_FOLDER'] = ($kind['table'] === 'J_FOLDER' ? 1 : 0);
+                $data[F_LIST] = self::jaluzi($ID, $kind['table'] === 'J_FOLDER');
+            };
         }
 
         if (count($child) > 0) {
-            $out['child'] = $child;
+            $out[F_CHILDS] = $child;
+        } else {
+            $data = array_merge_recursive((isset($out[F_DATA]) ? $out[F_DATA] : []), $data);
+            if (count(array_keys($data)) > 0) {
+                $out[F_DATA] = $data;
+            }
         }
 
         //-------------------------------------------------------------------------------------------------------
@@ -123,10 +157,14 @@ class TREE_GENERATE
         $from = array(
             '"', //0
             "'", //0
+            '&quot;',
+            '&amp;',
         );
         $to = array(
             '', //0
             '', //0
+            '',
+            '',
         );
         $res = str_replace($from, $to, $str);
         return $res;
@@ -158,7 +196,7 @@ class TREE_GENERATE
 
         }
         $PROCESSING_KIND = -1;
-        $ds = Base::ds($q, 'deco', self::$coding);
+        $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
             $row = [];
             while ($row = Base::read($ds)) {
@@ -171,15 +209,16 @@ class TREE_GENERATE
                 //$row['PATH_WWW'] = HTTP_MEDIA.$row['PATH_WWW'];
 
                 if ($PROCESSING_KIND == 1) {
-                    $view[] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
+                    //$view[] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
+                    $view[] = $row['PATH_WWW'];
                 } elseif ($PROCESSING_KIND == 2) {
-                    $row['PATH_WWW'] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
+                    //$row['PATH_WWW'] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
                     $download[] = $row;
                 } elseif ($PROCESSING_KIND == 3) {
-                    $row['PATH_WWW'] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
+                    //$row['PATH_WWW'] = Dir::join([HTTP_MEDIA, $row['PATH_WWW']]);
                     $print[] = $row;
                 } elseif ($PROCESSING_KIND == 4) {
-                    $row['PATH_WWW'] = Dir::join([HTTP_VIDEO, $row['PATH_WWW']]);
+                    //$row['PATH_WWW'] = Dir::join([HTTP_VIDEO, $row['PATH_WWW']]);
                     $video[] = $row;
                 }
             }
@@ -208,42 +247,116 @@ class TREE_GENERATE
 
     private static function karniz($row)
     {
-        $out = [];
+        $out = [
+            F_DATA => [],
+        ];
         $kind = SRCE_KIND[$row['SRCE_KIND']];
 
         $ID = $row['SRCE_ID'];
         $FIELD = $kind['field'];
         $TABLE = $kind['table'];
-        $is_chapter = $kind['is_chapter'];
-        $priceType = self::_typePrice($ID, $is_chapter);
+        $IS_CHAPTER = $kind['is_chapter'];
+        $priceType = self::_typePrice($ID, $IS_CHAPTER);
+        $out[F_DATA]['IS_CHAPTER'] = $IS_CHAPTER ? 1 : 0;
+        $out[F_DATA][$FIELD] = $ID;
 
-        $q = "select SHOW_AS from $TABLE where $FIELD=$ID";
+        $q = "SELECT SHOW_AS FROM $TABLE WHERE $FIELD=$ID";
         $show_as = Base::value($q, 'deco', ['default' => 0]);
 
-        $out['viewAs'] = self::_viewAs($show_as, $priceType);
+        $viewAs = self::_viewAs($show_as, $priceType);
+        if ($viewAs) {
+            $out[F_VIEW_AS] = $viewAs;
 
-        if ($out['viewAs'] === 'karnizB') {
-            $out['ID_K_TOVAR'] = self::idTovarPriceB($ID, $is_chapter);
+            if ($viewAs === 'karnizB') {
+                $out[F_DATA]['ID_K_TOVAR'] = self::idTovarPriceB($ID, $IS_CHAPTER);
+            }
+        }
+        return $out;
+    }
+
+    private static function jaluzi($id, $is_folder, $param = [])
+    {
+
+        $data = [];
+
+        $param = array_merge([
+            'PRINT' => 1,
+            'BLOCK' => -1, /* [dataIndex,blockIndex]*/
+            'CAN_GROUP_ENABLE' => true,
+            'kind' => -1,
+            'format' => false,
+        ], $param);
+
+        // -----------------------------------------------------------
+        if ($is_folder) {
+            $q = "select * from J_SET where ID_J_FOLDER=" . $id;
+        } else {
+            $q = "select * from J_SET where ID=" . $id;
         }
 
-        return $out;
+        if ($param['PRINT'] >= 0) {
+            $q .= " and PRINT=" . $param['PRINT'];
+        }
+
+        $q .= ' and ARCH<>1 order by ORD';
+        $ds = Base::ds($q, 'deco', 'utf8');
+
+        while ($row = Base::read($ds)) {
+
+            $ID_J_SET = $row['ID'];
+            // показывать остатки
+            //$param['SHOW_QUANTITY'] = $row['SHOW_QUANTITY'] == 1 ? true : false;
+
+            //$row['NOTE'] = self::noteFormat($row['NOTE']);
+
+            $q = "select * from J_IMAGES where ID_J_SET=$ID_J_SET and ARCH<>1 order by ORD";
+            $imgs = Base::ds($q, 'deco', 'utf8');
+            /**
+             * IMG.POS =
+             * 0 - Не отображать
+             * 1 - Перед таблицей
+             * 2 - После таблицы
+             * 3 - После примечания
+             */
+            // -----------------------------------------------------------------
+            // добавление в начало изображений
+            if ($imgs) {
+                while ($img = Base::read($imgs)) {
+                    if ($img['POS'] == 1) {
+                        $data[] = ['type' => 'img', 'ID_J_IMAGE' => $img['ID']];
+                    }
+                }
+            }
+
+            // -----------------------------------------------------------------
+            // добавление прайс-листов
+
+            // определяем тип отображения
+            $KIND_SHOW = ($param['kind'] == -1 ? $row['KIND_SHOW'] : $param['kind']);
+
+            switch ($KIND_SHOW) {
+                case '1':$data[] = ['type' => 'tab', 'ID_J_SET' => $ID_J_SET];
+                    break;
+                case '2':$data[] = ['type' => 'grid', 'ID_J_SET' => $ID_J_SET];
+                    break;
+                case '3':$data[] = ['type' => 'cell', 'ID_J_SET' => $ID_J_SET];
+                    break;
+            }
+            // -----------------------------------------------------------------
+            // добавление в конец изображений
+            if ($imgs) {
+                Base::first($imgs);
+                while ($img = Base::read($imgs)) {
+                    if ($img['POS'] >= 2) {
+                        $data[] = ['type' => 'img', 'ID_J_IMAGE' => $img['ID']];
+                    }
+                }
+            }
+
+        } //while
+
+        return $data;
     }
-
-    private static function jaluzi($row)
-    {
-        $out = [];
-        $out['viewAs'] = 'jaluzi';
-
-        return $out;
-    }
-
-    private static function tkani($row)
-    {
-        $out = [];
-        $out['viewAs'] = 'tkani';
-        return $out;
-    }
-
     private static function _viewAs($SHOW_AS, $typePrice = '')
     {
 
@@ -252,11 +365,11 @@ class TREE_GENERATE
         }
 
         if ($SHOW_AS == 2) {
-            return 'gallery';
+            return 'viewer'; //gallery
         }
 
         if ($SHOW_AS == 3) {
-            return 'video';
+            return 'viewer'; //video
         }
 
         return '';
@@ -397,24 +510,19 @@ class TREE_GENERATE
 
         return '"' . $value . '"';
     }
-    private static function jsToPhp(array $js, $cr = "\n", $level = 0)
+    /** возырвщает уникальный id */
+    private static function getId($custom = false)
     {
-        $php = '';
-        $gap = '  ';
-        $off = str_repeat($gap, $level);
-
-        foreach ($js as $key => $value) {
-            $type = gettype($value);
-            if ($type === 'array') {
-                $childs = self::jsToPhp($value, $cr, $level + 1);
-                if ($childs !== '') {
-                    $php .= $off . '"' . $key . '"=>[' . $cr . $childs . $off . '],' . $cr;
-                }
+        if ($custom === false) {
+            self::$id += 1;
+            return self::$id;
+        } else {
+            if (array_search($custom, self::$custom_id) !== false) {
+                console::error('duplicate custom id ', $custom);
             } else {
-                $php .= $off . '"' . $key . '"=>' . self::_typing($value) . ',' . $cr;
+                self::$custom_id[] = $custom;
             }
-
+            return $custom;
         }
-        return $php;
     }
 }

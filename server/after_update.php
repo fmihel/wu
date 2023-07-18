@@ -20,6 +20,7 @@ require_once __DIR__ . '/utils/tree_generate.php';
 require_once __DIR__ . '/utils/arch.php';
 require_once __DIR__ . '/utils/video_utils.php';
 require_once __DIR__ . '/utils/OrdersBlankTree.php';
+require_once __DIR__ . '/utils/tree_generate_v2.php';
 
 use fmihel\base\Base;
 use fmihel\config\Config;
@@ -29,13 +30,14 @@ use wu\utils\arch;
 use wu\utils\CreateTree;
 use wu\utils\OrdersBlankTree;
 use wu\utils\TREE_GENERATE;
+use wu\utils\TREE_GENERATE_V2;
 use wu\utils\video_utils;
 
 $out = ['res' => 0];
 
 //--------------------------------------------------------------------
 // кол-во шагов
-$COUNT_STEPS = 7;
+$COUNT_STEPS = 8;
 //--------------------------------------------------------------------
 if (isset($_REQUEST['count'])) {
     echo $COUNT_STEPS;
@@ -97,7 +99,15 @@ if (isset($_REQUEST['step'])) {
         video_utils::clear();
         $out['res'] = 1;
 
-    } //------------------------------------------------------------------------------------------
+    } elseif ($step == 7) { //--------------------------------------------------------------------
+        try {
+            TREE_GENERATE_V2::create(Dir::join([$catalogJsPath, 'catalog_v2.js']));
+        } catch (\Exception $e) {
+            console::error($e);
+        }
+        $out['res'] = 1;
+    }
+
 }
 
 echo ($out['res'] === 1 ? RESULT_OK : RESULT_ERROR);
