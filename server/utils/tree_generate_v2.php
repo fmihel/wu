@@ -17,6 +17,8 @@ const F_VIEW_AS = F_TYPE;
 const F_ICON = 'icon';
 const F_SUBSET = 'access';
 const F_LIST = 'list';
+const F_PRINT = 'print';
+const F_DOWNLOAD = 'download';
 /*
 const F_CAPTION = 'n';
 const F_ID = 'id';
@@ -62,6 +64,9 @@ class TREE_GENERATE_V2
     {
         $out = [];
         $data = [];
+        $print = [];
+        $download = [];
+
         $ID = $node['SRCE_ID'];
         $kind = SRCE_KIND[$node['SRCE_KIND']];
         //$FIELD = $kind['field'];
@@ -87,6 +92,19 @@ class TREE_GENERATE_V2
                 $data[F_LIST][] = ['type' => 'video', 'url' => $item['PATH_WWW']];
             }
         }
+        if (isset($media['print'])) {
+            foreach ($media['print'] as $item) {
+                $print[] = ['caption' => $item['CAPTION'], 'url' => $item['PATH_WWW']];
+            }
+        }
+
+        if (isset($media['download'])) {
+            foreach ($media['download'] as $item) {
+                $download[] = ['caption' => $item['CAPTION'], 'url' => $item['PATH_WWW']];
+            }
+
+        }
+
         //$out['media'] = self::_get_media(($ID != '0' ? $ID : $node['ID_CTLG_NODE']), Common::get($kind, 'media_kind', ''));
         //-------------------------------------------------------------------------------------------------------
         $q = 'select distinct ID_CTLG_SUBSET from CTLG_SUBSET_NODE where ID_CTLG_NODE = ' . $node['ID_CTLG_NODE'];
@@ -95,8 +113,10 @@ class TREE_GENERATE_V2
         while ($row = base::read($ds)) {
             $out[F_SUBSET][] = $row['ID_CTLG_SUBSET'];
         }
+        //console::logf($out, function ($out) {
+        //    return count($out[F_SUBSET]) > 1;
+        //});
         //-------------------------------------------------------------------------------------------------------
-
         $child = [];
         $q = 'select * from CTLG_NODE where ID_PARENT = ' . $node['ID_CTLG_NODE'] . ' and  ARCH<>1 order by NOM_PP';
         $ds = Base::ds($q, 'deco', 'utf8');
@@ -105,15 +125,16 @@ class TREE_GENERATE_V2
             $child[] = self::_create($row);
         }
 
-        //if (isset($out['media']['video'])) {
+        $isLastNode = (count($child) === 0);
+        //-------------------------------------------------------------------------------------------------------
+
         if (isset($media['video'])) {
-            if (count($child) === 0) {
-                $out[F_VIEW_AS] = 'viewer';
+            if ($isLastNode) {
+                $out[F_TYPE] = 'viewer';
             }
 
         } elseif ($node['SRCE_KIND'] == 0) {
-            if (count($child) === 0) {
-                //$out['viewAs'] = 'gallery';
+            if ($isLastNode) {
                 $out[F_TYPE] = 'viewer';
             }
 
@@ -122,14 +143,20 @@ class TREE_GENERATE_V2
             $data = array_merge_recursive($data, $karniz[F_DATA]);
             unset($karniz[F_DATA]);
             $out = array_merge($out, $karniz);
-
+            if (isset($karniz[F_TYPE]) && $karniz[F_TYPE] === 'karnizA') {
+                $print = array_merge($print,
+                    [
+                        ['caption' => 'Прайс-лист', 'url' => '#report/karnizA'],
+                    ]
+                );
+            }
         } elseif (($node['SRCE_KIND'] == 8) || ($node['SRCE_KIND'] == 9)) {
-            if (count($child) === 0) {
+            if ($isLastNode) {
                 $out[F_TYPE] = 'tkani';
                 $data[$kind['field']] = $ID;
             };
         } elseif (($node['SRCE_KIND'] == 10) || ($node['SRCE_KIND'] == 11)) {
-            if (count($child) === 0) {
+            if ($isLastNode) {
                 $out[F_TYPE] = 'jaluzi';
                 $data[$kind['field']] = $ID;
                 $data['IS_FOLDER'] = ($kind['table'] === 'J_FOLDER' ? 1 : 0);
@@ -137,13 +164,19 @@ class TREE_GENERATE_V2
             };
         }
 
-        if (count($child) > 0) {
-            $out[F_CHILDS] = $child;
-        } else {
+        if ($isLastNode) {
             $data = array_merge_recursive((isset($out[F_DATA]) ? $out[F_DATA] : []), $data);
             if (count(array_keys($data)) > 0) {
                 $out[F_DATA] = $data;
             }
+            if (count($print)) {
+                $out[F_PRINT] = $print;
+            }
+            if (count($download)) {
+                $out[F_DOWNLOAD] = $download;
+            }
+        } else {
+            $out[F_CHILDS] = $child;
         }
 
         //-------------------------------------------------------------------------------------------------------
