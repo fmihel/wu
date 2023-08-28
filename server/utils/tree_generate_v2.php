@@ -169,13 +169,16 @@ class TREE_GENERATE_V2
             if (count(array_keys($data)) > 0) {
                 $out[F_DATA] = $data;
             }
-            if (count($print)) {
-                $out[F_PRINT] = $print;
-            }
-            if (count($download)) {
-                $out[F_DOWNLOAD] = $download;
-            }
-        } else {
+        }
+
+        if (count($print)) {
+            $out[F_PRINT] = $print;
+        }
+        if (count($download)) {
+            $out[F_DOWNLOAD] = $download;
+        }
+
+        if (!$isLastNode) {
             $out[F_CHILDS] = $child;
         }
 
