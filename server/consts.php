@@ -190,4 +190,13 @@ $DELETED_TABLES = array(
     'K_VAR_MISS_COMP',
     'ORDERS_BLANK_TREE',
 
+    'TX_SECTION',
+    'TX_TOV_CONNECT',
+    'TX_SET',
+    'TEXTILE',
+    'TX_PROP_SET',
+    'TX_COLOR',
+    'STATE',
+    'TX_ED_IZM',
+
 );
