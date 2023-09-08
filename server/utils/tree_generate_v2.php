@@ -150,17 +150,27 @@ class TREE_GENERATE_V2
                     ]
                 );
             }
-        } elseif (($node['SRCE_KIND'] == 8) || ($node['SRCE_KIND'] == 9)) {
+        } elseif (($node['SRCE_KIND'] == 8) || ($node['SRCE_KIND'] == 9)) { // ткани
             if ($isLastNode) {
                 $out[F_TYPE] = 'tkani';
                 $data[$kind['field']] = $ID;
+                $print = array_merge($print,
+                    [
+                        ['caption' => 'Прайс-лист', 'url' => '#report/tkani'],
+                    ]
+                );
             };
-        } elseif (($node['SRCE_KIND'] == 10) || ($node['SRCE_KIND'] == 11)) {
+        } elseif (($node['SRCE_KIND'] == 10) || ($node['SRCE_KIND'] == 11)) { // жалюзи
             if ($isLastNode) {
                 $out[F_TYPE] = 'jaluzi';
                 $data[$kind['field']] = $ID;
                 $data['IS_FOLDER'] = ($kind['table'] === 'J_FOLDER' ? 1 : 0);
                 $data[F_LIST] = self::jaluzi($ID, $kind['table'] === 'J_FOLDER');
+                $print = array_merge($print,
+                    [
+                        ['caption' => 'Прайс-лист', 'url' => '#report/jaluzi'],
+                    ]
+                );
             };
         }
 
@@ -212,25 +222,21 @@ class TREE_GENERATE_V2
         if (!is_numeric($OWNER_ID) || (!is_numeric($OWNER_KIND))) {
             return [];
         }
-
         $view = [];
         $download = [];
         $print = [];
         $video = [];
 
-        $q = "
-            select
+        $q = "SELECT
                 ID_C_MEDIA_FILE,CAPTION,PATH_WWW,PROCESSING_KIND
             from
                 C_MEDIA_FILE
             where
                 OWNER_ID = $OWNER_ID and OWNER_KIND = $OWNER_KIND and ARCH<>1
             order by
-                PROCESSING_KIND,NOM_PP ";
+                PROCESSING_KIND,NOM_PP
+        ";
 
-        if ($OWNER_ID == '362') {
-
-        }
         $PROCESSING_KIND = -1;
         $ds = Base::ds($q, 'deco', 'utf8');
         if ($ds) {
@@ -261,6 +267,7 @@ class TREE_GENERATE_V2
         } else {
             //console::log("Error [$q]",__FILE__,__LINE__);
         }
+
         $out = [];
         if (count($view) > 0) {
             $out['gallery'] = $view;

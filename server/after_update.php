@@ -9,7 +9,7 @@ namespace wu;
  * http://windeco/wu/server/after_update.php?key=test&count
  * Выполнение шага:
  * https://windeco.su/remote_access_api/wu/server/after_update.php?key=kdiun78js&step=NNN
- * windeco/wu/server/after_update.php?key=test&step=NNN
+ * http://windeco/wu/server/after_update.php?key=test&step=NNN
  * windeco/wu/server/after_update.php?key=test&reculcAllTest
  */
 
