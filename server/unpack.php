@@ -1,65 +1,64 @@
 <?php
+namespace wu;
+
 /**
  * модуль распаковки загруженного обновления
  * см. UWindecoUpdate.pas
- * 
+ *
  * @param {string} file - имя распаковываемого файла
- */ 
+ */
+
 require_once 'init.php';
 
+use fmihel\base\Base;
+use fmihel\console;
+use fmihel\lib\Dir;
 
-/*------------------------------------------*/
-
-if(!isset($_REQUEST['file'])){
-    
-    echo RESULT_PARAM;
-    exit;
-}
-/*------------------------------------------*/
-$file = UPDATE_ZIP_PATH.$_REQUEST['file'];
-/*------------------------------------------*/
-if (!file_exists($file)){
-    _LOG('file not exists :'.$file,__FILE__,__LINE__);
-    
-    echo RESULT_FILE_NOT_EXIST;
+function stop($result)
+{
+    echo $result;
     exit;
 }
 
+/*------------------------------------------*/
+if (!isset($_REQUEST['file'])) {
+    stop(RESULT_PARAM);
+}
+/*------------------------------------------*/
+$file = UPDATE_ZIP_PATH . $_REQUEST['file'];
+/*------------------------------------------*/
+if (!file_exists($file)) {
+    console::error('not exists :' . $file);
+    stop(RESULT_FILE_NOT_EXIST);
+}
 /*------------------------------------------*/
 // регистрируем в таблице обновлений
-
-$q = "insert into UPDATE_LIST (CFILENAME,CDATE,CSTATE,CCOMMENT) value ('".$_REQUEST['file']."',CURRENT_TIMESTAMP,1,'')";
-
-if (!\base::query($q,'deco')){
-    _LOG(\base::error('deco')."[$q]",__FILE__,__LINE__);
-    echo RESULT_BASE_REG;
-    exit;
-} 
-
-/*------------------------------------------*/
-
-DIR::clear(UNPACK_ZIP_PATH);
+try {
+    $q = "insert into UPDATE_LIST (CFILENAME,CDATE,CSTATE,CCOMMENT) value ('" . $_REQUEST['file'] . "',CURRENT_TIMESTAMP,1,'')";
+    Base::query($q, 'deco');
+} catch (\Exception $e) {
+    console::log($e);
+    stop(RESULT_BASE_REG);
+};
 
 /*------------------------------------------*/
+Dir::clear(UNPACK_ZIP_PATH);
+/*------------------------------------------*/
 
-$zip = new ZipArchive;
-        
-try{        
-    
-    if ($zip->open($file) === TRUE) {
+$zip = new \ZipArchive;
+try {
+
+    if ($zip->open($file) === true) {
         $zip->extractTo(UNPACK_ZIP_PATH);
-            $zip->close();
-    }else{
-        
+        $zip->close();
+    } else {
+
     }
-            
-}catch (Exception $e){
-    _LOG("Error: ".$e->getMessage(),__FILE__,__LINE__);
-    echo RESULT_ERROR;
-    exit;
-}    
+
+} catch (\Exception $e) {
+    console::log($e);
+    stop(RESULT_ERROR);
+}
 /*------------------------------------------*/
 
-echo RESULT_OK;
-?>
-    
+stop(RESULT_OK);

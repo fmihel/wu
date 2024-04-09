@@ -3,9 +3,8 @@
   "version": "0.0.1",
   "description": "remote access",
   "scripts": {
-    "build-and-deploy": "npm run build-dist && npm run deploy",
-    "build-dist": "rm -rf dist  && cp -rf ./server ./dist && rm -rf ./dist/test ./dist/vendor && cd ./dist && composer i --no-dev && cd .. && cp -rf ws_conf.remote.php ./dist/ws_conf.php && node replace ",
-    "deploy": "node deploy.js"
+    "build": "rm -rf dist  && cp -rf ./server ./dist && rm -rf ./dist/test ./dist/vendor && cd ./dist && composer i --no-dev && cd .. && cp -rf config.remote.php ./dist/config.php && node replace ",
+    "deploy": "npm run build && node deploy.js"
   },
   "repository": {
     "type": "git",

@@ -1,125 +1,21 @@
 <?php
+namespace wu\utils;
+
 /**
  * утилиты к установке обновлений
  */
+require_once __DIR__ . '/../consts.php';
+require_once __DIR__ . '/Bdr.php';
+require_once __DIR__ . '/Compatible.php';
 
+use fmihel\base\Base;
 use fmihel\console;
+use fmihel\lib\Dir;
+use wu\utils\Bdr;
+use wu\utils\Compatible;
 
 // включает сохранение обновления
-define('SAVE_UPDATE_CHANGES', true);
-
-class Bdr
-{
-    private $file;
-    public $info;
-    public $fields;
-    public $id;
-    public $xml;
-    public $count;
-    public $table;
-
-    public function __construct($fileName)
-    {
-        $this->file = null;
-        $this->info = array();
-        $this->fields = array();
-        $this->id = '';
-        $this->xml = null;
-        $this->count = 0;
-        $this->open($fileName);
-    }
-
-    public function open($fileName)
-    {
-        global $Application;
-        global $TABLE_INDEX;
-        //----------------------------------------------------------------------
-        $this->table = APP::without_ext($fileName);
-        //----------------------------------------------------------------------
-        $file = APP::slash(UNPACK_ZIP_PATH, false, true) . $fileName;
-        //----------------------------------------------------------------------
-
-        $this->file = @fopen($file, "r");
-        //----------------------------------------------------------------------
-        $str = fgets($this->file) . fgets($this->file) . fgets($this->file);
-        $this->xml = new SimpleXMLElement($str);
-        //----------------------------------------------------------------------
-        foreach ($this->xml->METADATA->FIELDS->FIELD as $field) {
-
-            $name = isset($field['attrname']) ? trim($field['attrname']) : '';
-            if ($name !== '') {
-                $type = isset($field['fieldtype']) ? trim(strtoupper($field['fieldtype'])) : 'STRING';
-                $width = isset($field['WIDTH']) ? $field['WIDTH'] : '0';
-
-                array_push($this->info,
-                    array(
-                        'NAME' => $name,
-                        'TYPE' => $type,
-                        'WIDTH' => $width,
-                    ));
-
-                array_push($this->fields, array(
-                    'name' => $name,
-                ));
-            }
-        };
-
-        $this->id = $TABLE_INDEX[$this->table];
-        $this->count = $this->xml->COUNT;
-
-    }
-
-    public function close()
-    {
-
-        if (!is_null($this->file)) {
-            fclose($this->file);
-        }
-
-        $this->file = null;
-    }
-
-    public function gets()
-    {
-        return fgets($this->file);
-    }
-
-    public function moveTo($index)
-    {
-        $str = '';
-        while (!$this->eof()) {
-            $str = $this->gets();
-
-            if (strpos($str, '[<ROW>]') === 0) {
-                $index--;
-                if ($index < 0) {
-                    break;
-                }
-
-            }
-        };
-
-        return ($index < 0);
-
-    }
-
-    public function eof()
-    {
-        return feof($this->file);
-    }
-
-    public function debug_info($cr = "\n")
-    {
-        $out = '';
-        $out .= '[table] = ' . $this->table . $cr;
-        $out .= '[id] = ' . $this->id . $cr;
-        $out .= '[fields] = ' . print_r($this->fields, true) . $cr;
-        $out .= '[count] = ' . $this->count . $cr;
-        //$out.='[xml] = '.print_r($this->xml,true).$cr;
-
-        return $out;
-    }
-};
+const SAVE_UPDATE_CHANGES = true;
 
 class UPDATE_UTILS
 {
@@ -127,78 +23,78 @@ class UPDATE_UTILS
     public static function files()
     {
 
-        $list = array();
+        $list = [];
         $q = 'select * from UPDATE_LIST order by ID desc';
-        $ds = base::ds($q, 'deco');
+        $ds = Base::ds($q, 'deco');
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
                 $state = $row['CSTATE'];
 
                 if (!file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
                     $state = -1;
                 }
 
-                array_push($list, array(
+                $list[] = [
                     'ID' => $row['ID'],
                     'CFILENAME' => $row['CFILENAME'],
                     'CDATE' => $row['CDATE'],
                     'STATE' => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
                     'CSTATE' => $state,
-                ));
+                ];
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         //$real = DIR::files(UPDATE_ZIP_PATH,'zip');
 
-        return array('res' => 1, 'data' => $list);
+        return ['res' => 1, 'data' => $list];
     }
 
     /** возвращает список файлов больше id */
     public static function files_by_max_id($id)
     {
 
-        $list = array();
+        $list = [];
         $q = 'select * from UPDATE_LIST where ID>' . $id . ' order by ID desc';
-        $ds = base::ds($q, 'deco');
+        $ds = Base::ds($q, 'deco');
         if ($ds) {
-            while (base::by($ds, $row)) {
+            while ($row = Base::read($ds)) {
                 $state = $row['CSTATE'];
 
                 if (!file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
                     $state = -1;
                 }
 
-                array_push($list, array(
+                $list[] = [
                     'ID' => $row['ID'],
                     'CFILENAME' => $row['CFILENAME'],
                     'CDATE' => $row['CDATE'],
                     'STATE' => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
                     'CSTATE' => $state,
-                ));
+                ];
 
             }
         } else {
-            _LOG("Error [$q]", __FILE__, __LINE__);
+            console::error($q);
         }
 
         //$real = DIR::files(UPDATE_ZIP_PATH,'zip');
 
-        return array('res' => 1, 'data' => $list);
+        return ['res' => 1, 'data' => $list];
     }
 
     /** распаковка zip*/
     public static function unpack($file)
     {
-        global $Application;
+
         // распапоквывает архив во временную папку
-        $path = APP::slash(APP::rel_path($Application->PATH, $Application->PATH . UNPACK_ZIP_PATH), false, true);
+        $path = Dir::slash(Compatible::App_rel_path(Compatible::$PATH, Compatible::$PATH . UNPACK_ZIP_PATH), false, true);
 
-        DIR::clear($path);
+        Dir::clear($path);
 
-        $zip = new ZipArchive;
+        $zip = new \ZipArchive;
 
         try {
 
@@ -207,8 +103,8 @@ class UPDATE_UTILS
                 $zip->close();
             };
 
-        } catch (Exception $e) {
-            _LOG("Error: " . $e->getMessage(), __FILE__, __LINE__);
+        } catch (\Exception $e) {
+            console::error($e);
             return false;
         }
 
@@ -218,24 +114,24 @@ class UPDATE_UTILS
     /** возвращает информацию о содержимом архива обновления */
     public static function info($file)
     {
-        global $Application;
+
         $out = array('res' => 0);
 
         if (!self::unpack($file)) {
-            _LOG("Error unpack [$file]", __FILE__, __LINE__);
+            console::error("unpack [$file]");
             return $out;
         }
 
         $_files = DIR::files(UNPACK_ZIP_PATH, 'bdr');
 
-        $tables = array();
+        $tables = [];
         for ($i = 0; $i < count($_files); $i++) {
             $bdr = $_files[$i];
-            $table = APP::without_ext($bdr);
+            $table = Compatible::App_without_ext($bdr);
             $info = self::info_bdr($bdr);
-            array_push($tables, array('ID' => $i, 'TABLE' => $table, 'HAVE' => ($info['COUNT'] != 0 ? $info['COUNT'] : ''), 'INFO' => $info));
+            $tables[] = ['ID' => $i, 'TABLE' => $table, 'HAVE' => ($info['COUNT'] != 0 ? $info['COUNT'] : ''), 'INFO' => $info];
         }
-        return array('res' => 1, 'tables' => $tables);
+        return ['res' => 1, 'tables' => $tables];
 
     }
 
@@ -245,30 +141,32 @@ class UPDATE_UTILS
 
         $bdr = new Bdr($file);
         $bdr->close();
-        return array("FIELDS" => $bdr->info, "COUNT" => $bdr->count);
+        return ["FIELDS" => $bdr->info, "COUNT" => $bdr->count];
     }
 
     /** возвращает список файлов больше id */
     public static function delete_zip_file($id, $filename)
     {
 
-        $q = 'delete from UPDATE_LIST where ID =' . $id;
-        if (!base::query($q, 'deco')) {
-            _LOG("Error [$q]", __FILE__, __LINE__);
-            return array('res' => 0);
-        }
-        if (!unlink(UPDATE_ZIP_PATH . $filename)) {
-            _LOG("Error delete file " . UPDATE_ZIP_PATH . $filename, __FILE__, __LINE__);
-            return array('res' => 0);
-        }
+        try {
+            $q = 'delete from UPDATE_LIST where ID =' . $id;
+            Base::query($q, 'deco');
 
-        return array('res' => 1);
+            if (!unlink(UPDATE_ZIP_PATH . $filename)) {
+                throw new \Exception("delete file " . UPDATE_ZIP_PATH . $filename);
+            }
+
+            return ['res' => 1];
+        } catch (\Exception $e) {
+            console::error($e);
+            return ['res' => 0];
+        };
 
     }
 
     public static function get_update_info($file)
     {
-        //_LOG("$file",__FILE__,__LINE__);
+        //console::log("$file",__FILE__,__LINE__);
 
         $info = self::info($file);
         if ($info['res'] == 0) {
@@ -277,9 +175,9 @@ class UPDATE_UTILS
 
         $tab = $info['tables'];
 
-        //_LOG('['.print_r($tab,true).']',__FILE__,__LINE__);
+        //console::log('['.print_r($tab,true).']',__FILE__,__LINE__);
 
-        $out = array();
+        $out = [];
         $delete_lines = false;
 
         for ($i = 0; $i < count($tab); $i++) {
@@ -287,9 +185,9 @@ class UPDATE_UTILS
             if ($tab[$i]['HAVE'] !== '') {
 
                 if ($tab[$i]['TABLE'] !== 'DELETED_LINES') {
-                    array_push($out, array('TABLE' => $tab[$i]['TABLE'], 'COUNT' => $tab[$i]['HAVE']));
+                    $out[] = ['TABLE' => $tab[$i]['TABLE'], 'COUNT' => $tab[$i]['HAVE']];
                 } else {
-                    $delete_lines = array('TABLE' => 'DELETED_LINES', 'COUNT' => $tab[$i]['HAVE']);
+                    $delete_lines = ['TABLE' => 'DELETED_LINES', 'COUNT' => $tab[$i]['HAVE']];
                 }
 
             }
@@ -298,9 +196,7 @@ class UPDATE_UTILS
             array_unshift($out, $delete_lines);
         }
 
-        //_LOG('['.print_r($out,true).']',__FILE__,__LINE__);
-
-        return array('res' => 1, 'data' => $out);
+        return ['res' => 1, 'data' => $out];
 
     }
 
@@ -322,16 +218,16 @@ class UPDATE_UTILS
         if ($type === 'STRING') {
             //$mean = mb_convert_encoding($mean,'CP1251','ASCII');
             $mean = str_replace('[<CR>]', chr(13) . chr(10), $mean);
-            $out = \base::real_escape($mean, 'deco');
+            $out = Base::real_escape($mean, 'deco');
             return "'$out'";
         }
 
         if ($type === 'BIN.HEX') {
-            return '"' . (\base::real_escape(UPDATE_UTILS::decode_bin($mean), 'deco')) . '"';
+            return '"' . (Base::real_escape(self::decode_bin($mean), 'deco')) . '"';
         }
 
         if ($type === 'BIN') {
-            return UPDATE_UTILS::decode_bin($mean);
+            return self::decode_bin($mean);
         }
 
         if (($type === 'R8') || ($type === 'I4')) {
@@ -354,13 +250,12 @@ class UPDATE_UTILS
         $res = 1;
         $msg = '';
         //----------------------------------------------------------------------
-        global $TABLE_INDEX;
         global $DELETED_TABLES;
 
         //----------------------------------------------------------------------
         $bdr = new Bdr('DELETED_LINES.bdr');
         //----------------------------------------------------------------------
-        $TABLES_WEB = base::tables('deco');
+        $TABLES_WEB = Base::tables('deco');
         //----------------------------------------------------------------------
         // Поиск нужной записи
         if (!$bdr->moveTo($index)) {
@@ -370,7 +265,6 @@ class UPDATE_UTILS
         //----------------------------------------------------------------------
         while ($count_recs > 0) {
 
-            $VALUES = array();
             $str = $bdr->gets();
             while (strpos($str, '[</ROW>]') === false) {
 
@@ -379,7 +273,7 @@ class UPDATE_UTILS
                 $data = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
                 $str = $bdr->gets();
 
-                $IDS = array();
+                $IDS = [];
                 $IDS[$field] = $data;
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
@@ -415,7 +309,6 @@ class UPDATE_UTILS
 
                 if (array_search($TABLE, $DELETED_TABLES) !== false) {
                     $q = "delete from `$TABLE` where $ID_FIELD=$ID";
-                    //_LOG('['.print_r($q,true).']',__FILE__,__LINE__);
                 } else {
                     $q = "update $TABLE set ARCH=1 where $ID_FIELD=$ID";
                 }
@@ -425,11 +318,11 @@ class UPDATE_UTILS
                 }
 
                 if (SAVE_UPDATE_CHANGES) {
-                    if (!base::query($q, 'deco')) {
-                        //$res = 0;
-                        //$msg.=$q."<br>";
-                        _LOG("Error[$q]", __FILE__, __LINE__);
-                    }
+                    try {
+                        Base::query($q, 'deco');
+                    } catch (\Exception $e) {
+                        console::error($e);
+                    };
                 } else {
                     if (rand(1, 10) === 2) {
                         $res = 0;
@@ -449,7 +342,7 @@ class UPDATE_UTILS
         };
 
         $bdr->close();
-        return array('res' => $res, 'msg' => $msg);
+        return ['res' => $res, 'msg' => $msg];
     }
     /**
      * осуществляет поиск файла в папке media и удаляет его
@@ -459,35 +352,35 @@ class UPDATE_UTILS
      */
     public static function clearMediaFile($ID_C_MEDIA_FILE)
     {
-        global $Application;
+
         try {
 
             $q = 'select `PATH_WWW` from C_MEDIA_FILE where ID_C_MEDIA_FILE = ' . $ID_C_MEDIA_FILE;
 
-            $file = base::valueE($q, 'PATH_WWW', '', 'deco');
+            $file = Base::value($q, 'deco', ['default' => '']);
 
             if ($file != '') {
 
                 if (self::haveInBlanks($file)) {
-                    throw new Exception("not delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE, file use in order blank !");
+                    throw new \Exception("not delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE, file use in order blank !");
                 }
 
                 // выстраиваем относительный путь
-                $path = APP::get_path($file);
-                $path = APP::slash($Application->ROOT, false, true) . 'media' . APP::slash($path, true, false);
-                $path = APP::rel_path($Application->PATH, $path);
-                $file = APP::slash($path, false, true) . APP::get_file($file);
+                $path = Compatible::App_get_path($file);
+                $path = Dir::slash(Compatible::$ROOT, false, true) . 'media' . Dir::slash($path, true, false);
+                $path = Compatible::App_rel_path(Compatible::$PATH, $path);
+                $file = Dir::slash($path, false, true) . Compatible::App_get_file($file);
 
                 if (file_exists($file)) {
                     if (!unlink($file)) {
-                        throw new Exception("can`t delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE");
+                        throw new \Exception("can`t delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE");
                     }
                 }
 
             }
             return true;
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             console::error($e);
         }
 
@@ -499,11 +392,11 @@ class UPDATE_UTILS
     {
         //----------------------------------------------------------------------
         $bdr = new Bdr($table . '.bdr');
-        $errors = array();
+        $errors = [];
         $space = '{%$space%}';
         //----------------------------------------------------------------------
         // масив существующих полей
-        $FIELDS_WEB = base::fieldsInfo($bdr->table, true, 'deco');
+        $FIELDS_WEB = Base::fieldsInfo($bdr->table, 'deco', true);
         //----------------------------------------------------------------------
         // Поиск нужной записи
         if (!$bdr->moveTo($index)) {
@@ -515,7 +408,7 @@ class UPDATE_UTILS
         $msg = '';
         while ($count_recs > 0) {
 
-            $VALUES = array();
+            $VALUES = [];
             $str = $bdr->gets();
             //-------------------------------------------------------------------------------------
             /* считываем данные и пишем их в $VALUES = array('fieldName'=>value,...) */
@@ -525,9 +418,9 @@ class UPDATE_UTILS
                 //$value = trim(substr($str,strlen('[<DATA>]'),strlen($str)));
 
                 $value = substr($str, strlen('[<DATA>]'), strlen($str));
-                $value = STR::replace_loop(' ', $space, $value);
+                $value = Compatible::Str_replace_loop(' ', $space, $value);
                 $value = trim($value);
-                $value = STR::replace_loop($space, ' ', $value);
+                $value = Compatible::Str_replace_loop($space, ' ', $value);
 
                 //$field = mb_convert_encoding($field,'UTF-8','ASCII');
                 $VALUES[$field] = $value;
@@ -538,11 +431,11 @@ class UPDATE_UTILS
             //-------------------------------------------------------------------------------------
             // проверка существования записи
             $q = 'select count(' . $bdr->id . ')>0 HAVE from ' . $bdr->table . ' where ' . $bdr->id . '=' . $ID;
-            //_LOG("$q",__FILE__,__LINE__);
+            //console::log("$q",__FILE__,__LINE__);
 
             //-------------------------------------------------------------------------------------
 
-            if (base::value($q, 'HAVE', 0, 'deco') > 0) { // если существует, то формируем запрос на обновление
+            if (Base::value($q, 'deco', ['default' => 0]) > 0) { // если существует, то формируем запрос на обновление
 
                 $q = 'update ' . $bdr->table . ' set ';
                 $body = '';
@@ -553,7 +446,7 @@ class UPDATE_UTILS
 
                     if (($name !== $bdr->id) && (isset($VALUES[$name])) && (in_array($name, $FIELDS_WEB))) {
 
-                        $mean = UPDATE_UTILS::mean_by_type($VALUES[$name], $bdr->info[$k]['TYPE']);
+                        $mean = self::mean_by_type($VALUES[$name], $bdr->info[$k]['TYPE']);
 
                         $body .= ($body !== '' ? ',' : '') . '`' . $name . '`=' . $mean;
                     };
@@ -576,7 +469,7 @@ class UPDATE_UTILS
 
                         $fld .= '`' . $name . '`';
 
-                        $mean = UPDATE_UTILS::mean_by_type($VALUES[$name], $bdr->info[$k]['TYPE']);
+                        $mean = self::mean_by_type($VALUES[$name], $bdr->info[$k]['TYPE']);
                         if ($body !== '') {
                             $body .= ',';
                         }
@@ -589,19 +482,24 @@ class UPDATE_UTILS
             };
 
             if (SAVE_UPDATE_CHANGES) {
-                if (!base::query($q, 'deco')) {
+
+                try {
+                    Base::query($q, 'deco');
+                } catch (\Exception $e) {
                     $q = mb_convert_encoding($q, 'utf-8', 'cp1251');
-                    _LOG("Error[" . substr($q, 0, 100) . "..]", __FILE__, __LINE__);
+                    console::error($e);
+                    console::error("[" . substr($q, 0, 100) . "..]");
                     $res = 0;
                     $msg .= $q . "<br>";
-                }
+                };
+
             } else {
                 // для отладки имитируем отказ
                 //if (rand(1,10) === 2){
                 $res = 0;
                 $q = mb_convert_encoding($q, 'utf-8', 'cp1251');
                 $msg .= substr($q, 0, 200) . "<br>";
-                _LOG("Error[" . substr($q, 0, 100) . "..]", __FILE__, __LINE__);
+                console::error("[" . substr($q, 0, 100) . "..]");
 
                 //};
 
@@ -629,20 +527,18 @@ class UPDATE_UTILS
         //----------------------------------------------------------------------
         $bdr = new Bdr($file);
         //----------------------------------------------------------------------
-        // масив существующих полей
-        $FIELDS_WEB = base::fieldsInfo($bdr->table, true, 'deco');
         //----------------------------------------------------------------------
         // Поиск нужной записи
         if (!$bdr->moveTo($index)) {
             $bdr->close();
-            return array('res' => 0, 'msg' => 'index is overflow');
+            return ['res' => 0, 'msg' => 'index is overflow'];
         };
         //----------------------------------------------------------------------
         // считываем данные
-        $data = array();
+        $data = [];
         while ($count_recs > 0) {
 
-            $VALUES = array();
+            $VALUES = [];
             $str = $bdr->gets();
 
             while (strpos($str, '[</ROW>]') === false) {
@@ -661,7 +557,7 @@ class UPDATE_UTILS
                 $str = $bdr->gets();
             };
 
-            array_push($data, $VALUES);
+            $data[] = $VALUES;
             $count_recs--;
             $str = $bdr->gets();
 
@@ -673,7 +569,7 @@ class UPDATE_UTILS
         //----------------------------------------------------------------------
         $bdr->close();
         //----------------------------------------------------------------------
-        return array('res' => 1, 'indexField' => $bdr->id, 'fields' => $bdr->fields, 'data' => $data);
+        return ['res' => 1, 'indexField' => $bdr->id, 'fields' => $bdr->fields, 'data' => $data];
 
     }
 
@@ -685,7 +581,7 @@ class UPDATE_UTILS
         $TABLE = 'C_MEDIA_FILE';
         $FILENAME = 'PATH_WWW';
         $INDEX_NAME = $TABLE_INDEX[$TABLE];
-        $FIELDS_WEB = \base::fieldsInfo($TABLE, true, 'deco');
+        $FIELDS_WEB = Base::fieldsInfo($TABLE, 'deco', true);
 
         //----------------------------------------------------------------------
         $bdr = new Bdr($fileName . '.bdr');
@@ -700,7 +596,7 @@ class UPDATE_UTILS
 
         while ($count_recs > 0) {
 
-            $VALUES = array();
+            $VALUES = [];
             $str = $bdr->gets();
             //-------------------------------------------------------------------------------------
             /* считываем данные и пишем их в $VALUES = array('fieldName'=>value,...) */
@@ -737,15 +633,15 @@ class UPDATE_UTILS
 
                         if ($name === $FILENAME) {
                             if (trim($mean) !== '') {
-                                $file = BIN_STORY_PATH . APP::slash(str_replace("\\", '/', $mean), false, false);
-                                $ext = APP::ext($file);
-                                $path = APP::get_path($file);
-                                $file = $path . APP::without_ext($file) . '_' . $VALUES[$INDEX_NAME] . '.' . $ext;
+                                $file = BIN_STORY_PATH . Dir::slash(str_replace("\\", '/', $mean), false, false);
+                                $ext = Compatible::App_ext($file);
+                                $path = Compatible::App_get_path($file);
+                                $file = $path . Compatible::App_without_ext($file) . '_' . $VALUES[$INDEX_NAME] . '.' . $ext;
                                 $mean = str_replace(BIN_STORY_PATH, '', $file);
                             }
                         };
 
-                        $mean = UPDATE_UTILS::mean_by_type($mean, $bdr->info[$k]['TYPE']);
+                        $mean = self::mean_by_type($mean, $bdr->info[$k]['TYPE']);
                         // формируем тело update
                         if ($name !== $bdr->id) {
                             $update .= ($update !== '' ? ',' : '') . '`' . $name . '`=' . $mean;
@@ -770,24 +666,20 @@ class UPDATE_UTILS
 
             // -----------------------------------------------------------------------------------
             $q = 'insert into ' . $TABLE . ' (' . $fld . ') values (' . $insert . ') on duplicate key update ' . $update;
+            Base::query($q, 'deco');
             // -----------------------------------------------------------------------------------
 
-            if (!base::query($q, 'deco')) {
-                _LOG(base::error('deco') . ' [' . $q . ']', __FILE__, __LINE__);
-                $res = 0;
-            } else {
-                if ($file) {
-                    if (($path !== '') && (!file_exists($path)) && (!mkdir($path, 0777, true))) {
-                        _LOG('Error create path [' . $path . ']', __FILE__, __LINE__);
+            if ($file) {
+                if (($path !== '') && (!file_exists($path)) && (!mkdir($path, 0777, true))) {
+                    console::error('create path [' . $path . ']');
+                    $res = 0;
+                } else {
+                    if (!self::saveBinToFile($VALUES['CONTENT'], $file)) {
+                        console::error($file . ' story ');
                         $res = 0;
-                    } else {
-                        if (!self::saveBinToFile($VALUES['CONTENT'], $file)) {
-                            $res = 0;
-                            _LOG($file . ' story error', __FILE__, __LINE__);
-                        }
                     }
                 }
-            };
+            }
 
             $count_recs--;
             $str = $bdr->gets();
@@ -795,18 +687,17 @@ class UPDATE_UTILS
             if (strpos($str, '[</ROWDATA>]') === 0) {
                 break;
             }
-
         };
         $bdr->close();
 
-        return array('res' => $res);
+        return ['res' => $res];
     }
     /** сохраним бинарные данные из bdr в файл
      * ВНИМАНИЕ! Функция не проверялась
      */
     public static function saveBinToFile($bin, $filename)
     {
-        $data = UPDATE_UTILS::mean_by_type($bin, 'BIN');
+        $data = self::mean_by_type($bin, 'BIN');
 
         if (file_put_contents($filename, $data) !== false) {
             return true;
@@ -825,12 +716,12 @@ class UPDATE_UTILS
                 LIMIT 1
         ";
 
-        $exists = (base::valueE($q, 'exists', '', 'deco') == 1) ? true : false;
+        $exists = (Base::value($q, 'deco', ['default' => '']) == 1) ? true : false;
 
         if (!$exists) {
             // проверка наличия файла в шаблоне бланке
             $q = "SELECT 1 `exists` FROM `B_BLANKS` WHERE JSON_DATA LIKE '%$file%' LIMIT 1";
-            $exists = (base::valueE($q, 'exists', '', 'deco') == 1) ? true : false;
+            $exists = (Base::value($q, 'deco', ['default' => '']) == 1) ? true : false;
         }
 
         return $exists;

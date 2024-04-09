@@ -2,6 +2,8 @@
     "require": {
         "maennchen/zipstream-php": "^2.1",
         "fmihel/php-lib": "^3.6",
-        "fmihel/console-log": "^1.4"
+        "fmihel/console-log": "^1.4",
+        "fmihel/php-config": "^0.1.1",
+        "fmihel/php-base": "^1.2"
     }
 }
