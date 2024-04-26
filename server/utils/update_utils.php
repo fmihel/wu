@@ -725,7 +725,13 @@ class UPDATE_UTILS
         }
 
         return $exists;
+    }
 
+    public static function clearTable($tableName)
+    {
+        $q = "truncate table `$tableName`";
+        Base::query($q, 'deco');
+        console::log($q);
     }
 
 };

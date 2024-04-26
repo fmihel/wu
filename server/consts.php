@@ -200,3 +200,16 @@ $DELETED_TABLES = array(
     'TX_ED_IZM',
 
 );
+
+/** данные таблицы будут очищены полностью перед выкладыванием */
+const FULL_CLEAR_TABLES = [
+    'J_TMPL',
+    'J_TMPL_PAR',
+    'J_TMPL_PAR_CHOICE',
+    'J_TMPL_PAR_LIMIT',
+    'J_TMPL_PAR_VIS_COND',
+    'J_COLOR_MAP',
+    'J_ALG',
+    'J_BLANK',
+    'J_BLANK_CELL',
+];

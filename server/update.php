@@ -26,6 +26,12 @@ $table = $_REQUEST['table'];
 $pos = $_REQUEST['pos'];
 $delta = $_REQUEST['delta'];
 
+/** перед первым шагом, если таблица в списке  FULL_TREE_CATALOG очищаем ее полностью*/
+
+if ($pos == 0 && array_search($table, FULL_CLEAR_TABLES) !== false) {
+    UPDATE_UTILS::clearTable($table);
+}
+
 if ($table === 'DELETED_LINES') {
     $response = UPDATE_UTILS::deleted_lines($pos, $delta);
 }
