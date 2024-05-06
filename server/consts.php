@@ -212,4 +212,20 @@ const FULL_CLEAR_TABLES = [
     'J_ALG',
     'J_BLANK',
     'J_BLANK_CELL',
+
+    'K_TEMPL',
+    'K_TEMPL_TOV',
+    'K_TEMPL_TOV_ALG',
+    'K_BRACKET',
+    'K_COMPATIBLE',
+    'K_COMPONENT',
+    'K_COMP_CATEG',
+    'K_COMP_OWNER',
+    'K_COMP_PROP',
+    'K_M_VARIANT',
+    'K_VAR_MISS_COMP',
+    'K_TEMPL',
+    'K_MOD_TMPL',
+    'K_COMP_VIS_COND',
+
 ];
