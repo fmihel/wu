@@ -61,5 +61,6 @@ $config = [
     'videoPath' => '/home/h003301453/windeco.su/docs/video/',
     'videoUrl' => 'https://windeco.su/video/',
     'url:after_update.php' => 'https://windeco.su/remote_access_api/wu/server/after_update.php',
+    'orders-blank-tree' => 'D:\work\windeco\wu\server\test\js\orders_blank_tree.js',
 
 ];
