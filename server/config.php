@@ -63,4 +63,13 @@ $config = [
     'url:after_update.php' => 'https://windeco.su/remote_access_api/wu/server/after_update.php',
     'orders-blank-tree' => 'D:\work\windeco\wu\server\test\js\orders_blank_tree.js',
 
+    'jaluzi-search-data' => [
+        'to' => 'D:\work\windeco\wu\server\test\js\jaluzi_search_data.php',
+        'full_tree_catalog.php' => 'D:\work\windeco\wu\server\test\js\full_tree_catalog.php',
+        'require' => [
+            '../../windeco3/server/catalog/Jaluzi.php',
+        ],
+
+    ],
+
 ];
