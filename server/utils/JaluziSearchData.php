@@ -59,7 +59,7 @@ class JaluziSearchData
         $jaluzi_search_data = [];
         while ($row = Base::read($ds)) {
 
-            $price = Jaluzi::getTab(-1, -1, $row['ID_J_SET']);
+            $price = Jaluzi::getTab(-1, -1, $row['ID_J_SET'], ['ID_TOVAR' => true]);
             $data = $price['data'];
 
             $ID_CTLG_NODE = self::get_ID_CTLG_NODE(FULL_TREE_CATALOG, $row['ID_J_SET']);
@@ -67,7 +67,7 @@ class JaluziSearchData
             if ($ID_CTLG_NODE !== false) {
                 $arts = [];
                 foreach ($data as $item) {
-                    $arts[] = ['ID' => '', 'ART' => $item['ART']];
+                    $arts[] = ['ID' => $item['ID_TOVAR'], 'ART' => $item['ART']];
                 };
                 if (!empty($arts)) {
                     $jaluzi_search_data[$ID_CTLG_NODE] = $arts;
