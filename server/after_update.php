@@ -39,7 +39,7 @@ $out = ['res' => 0];
 
 //--------------------------------------------------------------------
 // кол-во шагов
-$COUNT_STEPS = 9;
+$COUNT_STEPS = 10;
 //--------------------------------------------------------------------
 if (isset($_REQUEST['count'])) {
     echo $COUNT_STEPS;
@@ -109,6 +109,15 @@ if (isset($_REQUEST['step'])) {
         }
         $out['res'] = 1;
     } elseif ($step == 8) { //--------------------------------------------------------------------
+        /** очистка кешированных данных поиска */
+        try {
+            Base::query('TRUNCATE `SEARCH_CACHE`', 'deco');
+        } catch (\Exception $e) {
+            console::error($e);
+        }
+        $out['res'] = 1;
+
+    } elseif ($step == 9) { //--------------------------------------------------------------------
         try {
             JaluziSearchData::create();
         } catch (\Exception $e) {

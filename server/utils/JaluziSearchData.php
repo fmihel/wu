@@ -40,9 +40,6 @@ class JaluziSearchData
 
         require_once $config['full_tree_catalog.php'];
 
-        $q = 'TRUNCATE `SEARCH_CACHE`';
-        Base::query($q, 'deco');
-
         $q = "INSERT into SEARCH_CACHE (`VALUE`,ID_CTLG_NODE,CAPTION,ID_ORDER_KIND,REQUEST) value (?,?,?,?,?)";
         $template = Base::prepare($q, 'deco');
         /**
@@ -56,7 +53,7 @@ class JaluziSearchData
             from
                 J_FIELDS_CONNECT jc
                 join J_SET_FIELDS sf on jc.ID_J_SET_FIELD = sf.ID
-                join j_set js on js.ID = jc.ID_J_SET
+                join J_SET js on js.ID = jc.ID_J_SET
             where
                 (   sf.FIELD_NAME = 'ART'
                     or
