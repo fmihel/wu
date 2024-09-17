@@ -484,7 +484,7 @@ class UPDATE_UTILS
             if (SAVE_UPDATE_CHANGES) {
 
                 try {
-                    Base::query($q, 'deco');
+                    Base::query($q, 'deco', 'cp1251');
                 } catch (\Exception $e) {
                     $q = mb_convert_encoding($q, 'utf-8', 'cp1251');
                     console::error($e);
