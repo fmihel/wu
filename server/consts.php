@@ -224,6 +224,7 @@ const FULL_CLEAR_TABLES = [
     'K_COMP_OWNER',
     'K_COMP_PROP',
     'K_M_VARIANT',
+    'K_M_COMP',
     'K_VAR_MISS_COMP',
     'K_COMP_VIS_COND',
 
