@@ -27,10 +27,12 @@ type
     Edit1: TEdit;
     Label3: TLabel;
     Edit3: TEdit;
+    btnTest: TButton;
     procedure actRunExecute(Sender: TObject);
     procedure actStopExecute(Sender: TObject);
     procedure actUploadVideoExecute(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure btnTestClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
@@ -147,6 +149,51 @@ begin
     if OpenDialog1.Execute then begin
         Edit2.Text:=OpenDialog1.FileName;
     end;
+end;
+
+procedure TfrmMain.btnTestClick(Sender: TObject);
+var
+  windeco:TWindecoUpdate;
+  res: TWindecoUpdateResult;
+  cFiles:TstringList;
+begin
+
+    windeco:=TWindecoUpdate.Create();
+    cFiles:=TStringList.Create();
+
+    try
+
+//        // указать,  с каким файлом работаем
+//        windeco.ZipFileName:=Edit2.Text;
+
+        // получить список файлов сервера
+        if windeco.LoadExistsFiles(cFiles)=wurOk then begin
+            log('Файлы на сервевре до обновления');
+            mmLog.Lines.AddStrings(cFiles);
+         end;
+
+
+        // запуск процесса обновления
+//        res:=windeco.Run();
+
+
+//        windeco.LoadExistsFiles(cFiles);
+//
+//        if windeco.LoadExistsFiles(cFiles)=wurOk then begin
+//            log('Файлы на сервевре после обновления');
+//            mmLog.Lines.AddStrings(cFiles);
+//        end;
+
+    finally
+        cFiles.Free();
+        windeco.Free();
+
+    end;
+
+
+    log(Format('результат %s',[TWindecoUpdateResultStr[integer(res)]]));
+    log(Format('расшифровка "%s"',[TWindecoUpdateResultNotes[integer(res)]]));
+
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);

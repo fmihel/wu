@@ -1,4 +1,4 @@
-{:
+﻿{:
 UWindecoUpdate.pas : Выгрузка обновлений на веб сервер
 Данный модуль содержит класс управления выгрузкой обновления
 на web сервер windeco
@@ -384,6 +384,8 @@ begin
 
       http:=TIdHTTP.Create(nil);
       ssl:=TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+      ssl.SSLOptions.SSLVersions:=[sslvTLSv1_1,sslvTLSv1_2];
+
       http.IOHandler:=ssl;
       try
       try
