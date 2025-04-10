@@ -24,22 +24,22 @@ class UPDATE_UTILS
     {
 
         $list = [];
-        $q = 'select * from UPDATE_LIST order by ID desc';
-        $ds = Base::ds($q, 'deco');
+        $q    = 'select * from UPDATE_LIST order by ID desc';
+        $ds   = Base::ds($q, 'deco');
         if ($ds) {
             while ($row = Base::read($ds)) {
                 $state = $row['CSTATE'];
 
-                if (!file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
+                if (! file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
                     $state = -1;
                 }
 
                 $list[] = [
-                    'ID' => $row['ID'],
+                    'ID'        => $row['ID'],
                     'CFILENAME' => $row['CFILENAME'],
-                    'CDATE' => $row['CDATE'],
-                    'STATE' => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
-                    'CSTATE' => $state,
+                    'CDATE'     => $row['CDATE'],
+                    'STATE'     => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
+                    'CSTATE'    => $state,
                 ];
 
             }
@@ -57,22 +57,22 @@ class UPDATE_UTILS
     {
 
         $list = [];
-        $q = 'select * from UPDATE_LIST where ID>' . $id . ' order by ID desc';
-        $ds = Base::ds($q, 'deco');
+        $q    = 'select * from UPDATE_LIST where ID>' . $id . ' order by ID desc';
+        $ds   = Base::ds($q, 'deco');
         if ($ds) {
             while ($row = Base::read($ds)) {
                 $state = $row['CSTATE'];
 
-                if (!file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
+                if (! file_exists(UPDATE_ZIP_PATH . $row['CFILENAME'])) {
                     $state = -1;
                 }
 
                 $list[] = [
-                    'ID' => $row['ID'],
+                    'ID'        => $row['ID'],
                     'CFILENAME' => $row['CFILENAME'],
-                    'CDATE' => $row['CDATE'],
-                    'STATE' => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
-                    'CSTATE' => $state,
+                    'CDATE'     => $row['CDATE'],
+                    'STATE'     => ($state == 1 ? "выложен" : ($state == -1 ? "отсутствует" : "не обработан")),
+                    'CSTATE'    => $state,
                 ];
 
             }
@@ -101,7 +101,7 @@ class UPDATE_UTILS
             if ($zip->open(UPDATE_ZIP_PATH . $file) === true) {
                 $zip->extractTo($path);
                 $zip->close();
-            };
+            }
 
         } catch (\Exception $e) {
             console::error($e);
@@ -115,9 +115,9 @@ class UPDATE_UTILS
     public static function info($file)
     {
 
-        $out = array('res' => 0);
+        $out = ['res' => 0];
 
-        if (!self::unpack($file)) {
+        if (! self::unpack($file)) {
             console::error("unpack [$file]");
             return $out;
         }
@@ -126,9 +126,9 @@ class UPDATE_UTILS
 
         $tables = [];
         for ($i = 0; $i < count($_files); $i++) {
-            $bdr = $_files[$i];
-            $table = Compatible::App_without_ext($bdr);
-            $info = self::info_bdr($bdr);
+            $bdr      = $_files[$i];
+            $table    = Compatible::App_without_ext($bdr);
+            $info     = self::info_bdr($bdr);
             $tables[] = ['ID' => $i, 'TABLE' => $table, 'HAVE' => ($info['COUNT'] != 0 ? $info['COUNT'] : ''), 'INFO' => $info];
         }
         return ['res' => 1, 'tables' => $tables];
@@ -152,7 +152,7 @@ class UPDATE_UTILS
             $q = 'delete from UPDATE_LIST where ID =' . $id;
             Base::query($q, 'deco');
 
-            if (!unlink(UPDATE_ZIP_PATH . $filename)) {
+            if (! unlink(UPDATE_ZIP_PATH . $filename)) {
                 throw new \Exception("delete file " . UPDATE_ZIP_PATH . $filename);
             }
 
@@ -160,7 +160,7 @@ class UPDATE_UTILS
         } catch (\Exception $e) {
             console::error($e);
             return ['res' => 0];
-        };
+        }
 
     }
 
@@ -177,7 +177,7 @@ class UPDATE_UTILS
 
         //console::log('['.print_r($tab,true).']',__FILE__,__LINE__);
 
-        $out = [];
+        $out          = [];
         $delete_lines = false;
 
         for ($i = 0; $i < count($tab); $i++) {
@@ -209,7 +209,7 @@ class UPDATE_UTILS
             $hex = $mean[$i * 2 + 3] . $mean[$i * 2 + 3 + 1];
             $out .= chr(hexdec($hex));
 
-        };
+        }
         return $out;
     }
 
@@ -218,7 +218,7 @@ class UPDATE_UTILS
         if ($type === 'STRING') {
             //$mean = mb_convert_encoding($mean,'CP1251','ASCII');
             $mean = str_replace('[<CR>]', chr(13) . chr(10), $mean);
-            $out = Base::real_escape($mean, 'deco');
+            $out  = Base::real_escape($mean, 'deco');
             return "'$out'";
         }
 
@@ -258,9 +258,9 @@ class UPDATE_UTILS
         $TABLES_WEB = Base::tables('deco');
         //----------------------------------------------------------------------
         // Поиск нужной записи
-        if (!$bdr->moveTo($index)) {
+        if (! $bdr->moveTo($index)) {
             $bdr->close();
-            return array('res' => 0, 'msg' => 'index is overflow');
+            return ['res' => 0, 'msg' => 'index is overflow'];
         };
         //----------------------------------------------------------------------
         while ($count_recs > 0) {
@@ -269,41 +269,41 @@ class UPDATE_UTILS
             while (strpos($str, '[</ROW>]') === false) {
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
-                $data = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
+                $data  = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
+                $str   = $bdr->gets();
 
-                $IDS = [];
+                $IDS         = [];
                 $IDS[$field] = $data;
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
-                $data = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
+                $data  = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
+                $str   = $bdr->gets();
 
                 $TABLE = $data;
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
-                $id = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
+                $id    = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
+                $str   = $bdr->gets();
 
                 $ID_FIELD = $id;
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
-                $val = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
+                $val   = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
+                $str   = $bdr->gets();
 
                 $ID = $val;
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
-                $val = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
+                $val   = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
+                $str   = $bdr->gets();
 
                 $DATE = $val;
-            };
+            }
 
             if (array_search($TABLE, $TABLES_WEB) !== false) {
 
@@ -322,15 +322,15 @@ class UPDATE_UTILS
                         Base::query($q, 'deco');
                     } catch (\Exception $e) {
                         console::error($e);
-                    };
+                    }
                 } else {
                     if (rand(1, 10) === 2) {
                         $res = 0;
                         $msg .= $q . "<br>";
                     }
-                };
+                }
 
-            };
+            }
 
             $count_recs--;
 
@@ -339,7 +339,7 @@ class UPDATE_UTILS
                 break;
             }
 
-        };
+        }
 
         $bdr->close();
         return ['res' => $res, 'msg' => $msg];
@@ -372,7 +372,7 @@ class UPDATE_UTILS
                 $file = Dir::slash($path, false, true) . Compatible::App_get_file($file);
 
                 if (file_exists($file)) {
-                    if (!unlink($file)) {
+                    if (! unlink($file)) {
                         throw new \Exception("can`t delete [$file] C_MEDIA_FILE.ID_C_MEDIA_FILE === $ID_C_MEDIA_FILE");
                     }
                 }
@@ -391,17 +391,17 @@ class UPDATE_UTILS
     public static function update_step($table, $index, $count_recs = 1)
     {
         //----------------------------------------------------------------------
-        $bdr = new Bdr($table . '.bdr');
+        $bdr    = new Bdr($table . '.bdr');
         $errors = [];
-        $space = '{%$space%}';
+        $space  = '{%$space%}';
         //----------------------------------------------------------------------
         // масив существующих полей
         $FIELDS_WEB = Base::fieldsInfo($bdr->table, 'deco', true);
         //----------------------------------------------------------------------
         // Поиск нужной записи
-        if (!$bdr->moveTo($index)) {
+        if (! $bdr->moveTo($index)) {
             $bdr->close();
-            return array('res' => 0, 'msg' => 'index is overflow');
+            return ['res' => 0, 'msg' => 'index is overflow'];
         };
         //----------------------------------------------------------------------
         $res = 1;
@@ -409,12 +409,12 @@ class UPDATE_UTILS
         while ($count_recs > 0) {
 
             $VALUES = [];
-            $str = $bdr->gets();
+            $str    = $bdr->gets();
             //-------------------------------------------------------------------------------------
             /* считываем данные и пишем их в $VALUES = array('fieldName'=>value,...) */
             while (strpos($str, '[</ROW>]') === false) {
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
                 //$value = trim(substr($str,strlen('[<DATA>]'),strlen($str)));
 
                 $value = substr($str, strlen('[<DATA>]'), strlen($str));
@@ -424,7 +424,7 @@ class UPDATE_UTILS
 
                 //$field = mb_convert_encoding($field,'UTF-8','ASCII');
                 $VALUES[$field] = $value;
-                $str = $bdr->gets();
+                $str            = $bdr->gets();
             };
             //-------------------------------------------------------------------------------------
             $ID = $VALUES[$bdr->id];
@@ -437,7 +437,7 @@ class UPDATE_UTILS
 
             if (Base::value($q, 'deco', ['default' => 0]) > 0) { // если существует, то формируем запрос на обновление
 
-                $q = 'update ' . $bdr->table . ' set ';
+                $q    = 'update ' . $bdr->table . ' set ';
                 $body = '';
 
                 for ($k = 0; $k < count($bdr->info); $k++) {
@@ -449,14 +449,14 @@ class UPDATE_UTILS
                         $mean = self::mean_by_type($VALUES[$name], $bdr->info[$k]['TYPE']);
 
                         $body .= ($body !== '' ? ',' : '') . '`' . $name . '`=' . $mean;
-                    };
-                };
+                    }
+                }
                 $q .= $body . ' where ' . $bdr->id . '=' . $ID;
 
             } else {
 
-                $q = 'insert into ' . $bdr->table . ' ';
-                $fld = '';
+                $q    = 'insert into ' . $bdr->table . ' ';
+                $fld  = '';
                 $body = '';
                 for ($k = 0; $k < count($bdr->info); $k++) {
 
@@ -475,11 +475,11 @@ class UPDATE_UTILS
                         }
 
                         $body .= $mean;
-                    };
-                };
+                    }
+                }
 
                 $q .= '(' . $fld . ') values (' . $body . ')';
-            };
+            }
 
             if (SAVE_UPDATE_CHANGES) {
 
@@ -491,13 +491,13 @@ class UPDATE_UTILS
                     console::error("[" . substr($q, 0, 100) . "..]");
                     $res = 0;
                     $msg .= $q . "<br>";
-                };
+                }
 
             } else {
                 // для отладки имитируем отказ
                 //if (rand(1,10) === 2){
                 $res = 0;
-                $q = mb_convert_encoding($q, 'utf-8', 'cp1251');
+                $q   = mb_convert_encoding($q, 'utf-8', 'cp1251');
                 $msg .= substr($q, 0, 200) . "<br>";
                 console::error("[" . substr($q, 0, 100) . "..]");
 
@@ -512,10 +512,10 @@ class UPDATE_UTILS
                 break;
             }
 
-        };
+        }
 
         $bdr->close();
-        return array('res' => $res, 'msg' => $msg);
+        return ['res' => $res, 'msg' => $msg];
 
     }
 
@@ -529,7 +529,7 @@ class UPDATE_UTILS
         //----------------------------------------------------------------------
         //----------------------------------------------------------------------
         // Поиск нужной записи
-        if (!$bdr->moveTo($index)) {
+        if (! $bdr->moveTo($index)) {
             $bdr->close();
             return ['res' => 0, 'msg' => 'index is overflow'];
         };
@@ -539,12 +539,12 @@ class UPDATE_UTILS
         while ($count_recs > 0) {
 
             $VALUES = [];
-            $str = $bdr->gets();
+            $str    = $bdr->gets();
 
             while (strpos($str, '[</ROW>]') === false) {
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
                 $value = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
 
                 $VALUES[$field] = mb_convert_encoding($value, 'UTF-8', 'CP1251');
@@ -555,7 +555,7 @@ class UPDATE_UTILS
                 }
 
                 $str = $bdr->gets();
-            };
+            }
 
             $data[] = $VALUES;
             $count_recs--;
@@ -578,8 +578,8 @@ class UPDATE_UTILS
         $res = 1;
         //----------------------------------------------------------------------
         global $TABLE_INDEX;
-        $TABLE = 'C_MEDIA_FILE';
-        $FILENAME = 'PATH_WWW';
+        $TABLE      = 'C_MEDIA_FILE';
+        $FILENAME   = 'PATH_WWW';
         $INDEX_NAME = $TABLE_INDEX[$TABLE];
         $FIELDS_WEB = Base::fieldsInfo($TABLE, 'deco', true);
 
@@ -588,27 +588,27 @@ class UPDATE_UTILS
         //----------------------------------------------------------------------
 
         // Поиск нужной записи
-        if (!$bdr->moveTo($index)) {
+        if (! $bdr->moveTo($index)) {
             $bdr->close();
-            return array('res' => 0, 'msg' => 'index is overflow');
+            return ['res' => 0, 'msg' => 'index is overflow'];
         };
         //----------------------------------------------------------------------
 
         while ($count_recs > 0) {
 
             $VALUES = [];
-            $str = $bdr->gets();
+            $str    = $bdr->gets();
             //-------------------------------------------------------------------------------------
             /* считываем данные и пишем их в $VALUES = array('fieldName'=>value,...) */
 
             while (strpos($str, '[</ROW>]') === false) {
 
                 $field = trim(substr($str, strlen('[<FIELD>]'), strlen($str)));
-                $str = $bdr->gets();
+                $str   = $bdr->gets();
                 $value = trim(substr($str, strlen('[<DATA>]'), strlen($str)));
 
                 $VALUES[$field] = $value;
-                $str = $bdr->gets();
+                $str            = $bdr->gets();
             };
 
             //-------------------------------------------------------------------------------------
@@ -618,9 +618,9 @@ class UPDATE_UTILS
             // обновляем таблицу
             $insert = '';
             $update = '';
-            $fld = '';
-            $file = false;
-            $path = '';
+            $fld    = '';
+            $file   = false;
+            $path   = '';
 
             for ($k = 0; $k < count($bdr->info); $k++) {
 
@@ -634,12 +634,12 @@ class UPDATE_UTILS
                         if ($name === $FILENAME) {
                             if (trim($mean) !== '') {
                                 $file = BIN_STORY_PATH . Dir::slash(str_replace("\\", '/', $mean), false, false);
-                                $ext = Compatible::App_ext($file);
+                                $ext  = Compatible::App_ext($file);
                                 $path = Compatible::App_get_path($file);
                                 $file = $path . Compatible::App_without_ext($file) . '_' . $VALUES[$INDEX_NAME] . '.' . $ext;
                                 $mean = str_replace(BIN_STORY_PATH, '', $file);
                             }
-                        };
+                        }
 
                         $mean = self::mean_by_type($mean, $bdr->info[$k]['TYPE']);
                         // формируем тело update
@@ -659,22 +659,22 @@ class UPDATE_UTILS
 
                         $insert .= $mean;
 
-                    };
-                };
+                    }
+                }
 
             }; //for
 
             // -----------------------------------------------------------------------------------
             $q = 'insert into ' . $TABLE . ' (' . $fld . ') values (' . $insert . ') on duplicate key update ' . $update;
-            Base::query($q, 'deco');
+            Base::query($q, 'deco', 'cp1251');
             // -----------------------------------------------------------------------------------
 
             if ($file) {
-                if (($path !== '') && (!file_exists($path)) && (!mkdir($path, 0777, true))) {
+                if (($path !== '') && (! file_exists($path)) && (! mkdir($path, 0777, true))) {
                     console::error('create path [' . $path . ']');
                     $res = 0;
                 } else {
-                    if (!self::saveBinToFile($VALUES['CONTENT'], $file)) {
+                    if (! self::saveBinToFile($VALUES['CONTENT'], $file)) {
                         console::error($file . ' story ');
                         $res = 0;
                     }
@@ -687,7 +687,7 @@ class UPDATE_UTILS
             if (strpos($str, '[</ROWDATA>]') === 0) {
                 break;
             }
-        };
+        }
         $bdr->close();
 
         return ['res' => $res];
@@ -718,9 +718,9 @@ class UPDATE_UTILS
 
         $exists = (Base::value($q, 'deco', ['default' => '']) == 1) ? true : false;
 
-        if (!$exists) {
+        if (! $exists) {
             // проверка наличия файла в шаблоне бланке
-            $q = "SELECT 1 `exists` FROM `B_BLANKS` WHERE JSON_DATA LIKE '%$file%' LIMIT 1";
+            $q      = "SELECT 1 `exists` FROM `B_BLANKS` WHERE JSON_DATA LIKE '%$file%' LIMIT 1";
             $exists = (Base::value($q, 'deco', ['default' => '']) == 1) ? true : false;
         }
 
@@ -734,4 +734,4 @@ class UPDATE_UTILS
         console::log($q);
     }
 
-};
+}
