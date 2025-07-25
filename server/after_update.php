@@ -22,6 +22,7 @@ require_once __DIR__ . '/utils/video_utils.php';
 require_once __DIR__ . '/utils/OrdersBlankTree.php';
 require_once __DIR__ . '/utils/tree_generate_v2.php';
 require_once __DIR__ . '/utils/JaluziSearchData.php';
+require_once __DIR__ . '/utils/KarnizTemplateHandler.php';
 
 use fmihel\base\Base;
 use fmihel\config\Config;
@@ -30,6 +31,7 @@ use fmihel\lib\Dir;
 use wu\utils\arch;
 use wu\utils\CreateTree;
 use wu\utils\JaluziSearchData;
+use wu\utils\KarnizTemplateHandler;
 use wu\utils\OrdersBlankTree;
 use wu\utils\TREE_GENERATE;
 use wu\utils\TREE_GENERATE_V2;
@@ -39,7 +41,7 @@ $out = ['res' => 0];
 
 //--------------------------------------------------------------------
 // кол-во шагов
-$COUNT_STEPS = 10;
+$COUNT_STEPS = 11;
 //--------------------------------------------------------------------
 if (isset($_REQUEST['count'])) {
     echo $COUNT_STEPS;
@@ -52,7 +54,7 @@ $catalogJsPath = __DIR__ . Config::get('catalogJsPath');
 if (isset($_REQUEST['step'])) {
 
     $step = intval($_REQUEST['step']);
-    // шаги
+                      // шаги
     if ($step == 0) { //--------------------------------------------------------------------------
         $out = CreateTree::SAVE_ALL($catalogJsPath);
 
@@ -68,7 +70,7 @@ if (isset($_REQUEST['step'])) {
         $out['res'] = 1;
 
     } elseif ($step == 2) { //--------------------------------------------------------------------
-        // очистка кеша BUFFER
+                                // очистка кеша BUFFER
         if (Base::query('truncate table BUFFER', 'deco')) {
             $out['res'] = 1;
         }
@@ -82,22 +84,22 @@ if (isset($_REQUEST['step'])) {
 
     } elseif ($step == 4) { //--------------------------------------------------------------------
 
-        arch::$path = Config::get('arch_path');
+        arch::$path        = Config::get('arch_path');
         arch::$catalogPath = Config::get('arch_catalogPath');
-        arch::$mediaPath = Config::get('arch_mediaPath');
-        arch::$mediaHttp = Config::get('arch_mediaHttp');
-        arch::$zipPath = Config::get('arch_zipPath');
+        arch::$mediaPath   = Config::get('arch_mediaPath');
+        arch::$mediaHttp   = Config::get('arch_mediaHttp');
+        arch::$zipPath     = Config::get('arch_zipPath');
         arch::create();
 
         $out['res'] = 1;
 
     } elseif ($step == 5) { //--------------------------------------------------------------------
-        // перестройка дерева шаблонов - заказов
+                                // перестройка дерева шаблонов - заказов
         OrdersBlankTree::update();
         $out['res'] = 1;
 
     } elseif ($step == 6) { //--------------------------------------------------------------------
-        // удаление неиспользуемых видео
+                                // удаление неиспользуемых видео
         video_utils::clear();
         $out['res'] = 1;
 
@@ -124,8 +126,15 @@ if (isset($_REQUEST['step'])) {
             console::error($e);
         }
         $out['res'] = 1;
-    }
 
+    } elseif ($step == 10) { //--------------------------------------------------------------------
+        try {
+            KarnizTemplateHandler::run();
+        } catch (\Exception $e) {
+            console::error($e);
+        }
+        $out['res'] = 1;
+    }
 }
 
-echo ($out['res'] === 1 ? RESULT_OK : RESULT_ERROR);
+echo($out['res'] === 1 ? RESULT_OK : RESULT_ERROR);
