@@ -3,6 +3,20 @@ namespace wu\utils;
 
 use fmihel\base\Base;
 use fmihel\console;
+use fmihel\lib\Common;
+
+function get($var, array $params, $default = null)
+{
+    return Common::get($var, ...array_merge($params, [$default]));
+}
+
+const ALG_INHERITED          = 0; // Смотри родительский (наследуемый)
+const ALG_BY_CATEGORY        = 1; // Согласно категории
+const ALG_LENGTH_NES_ELEMENT = 2; // Длина несущего элемента
+const ALG_LENGTH_TOVAR       = 3; // Подбор товаров по длине
+const ALG_OTLET              = 4; // Подбор товаров по отлету
+const ALG_FIX                = 5; // Фиксир.
+const ALG_MANUAL             = 6; // Ручной ввод
 
 class KarnizTemplateHandler
 {
@@ -11,13 +25,14 @@ class KarnizTemplateHandler
     private static $PROP_UPDATE_FIELDS          = [];
     private static $STR_COMPONENT_UPDATE_FIELDS = '';
     private static $STR_PROP_UPDATE_FIELDS      = '';
-
+    private static $COUNT_MODIF                 = 0;
     public static function run()
     {
         Base::startTransaction('deco');
         try {
+            console::line();
             console::time('KarnizTemplateHandler::run', false);
-
+            self::$COUNT_MODIF             = 0;
             self::$PROP_UPDATE_FIELDS      = self::init_update_prop_fields();
             self::$COMPONENT_UPDATE_FIELDS = self::init_update_component_fields();
 
@@ -26,24 +41,61 @@ class KarnizTemplateHandler
 
             self::map(function ($item, $parent) {
 
-                $category       = $item['ID_K_COMP_CATEG'];
-                $parentCategory = $parent['ID_K_COMP_CATEG'];
-                $alg            = $item['ALG_NUM'];
-                $parentAlg      = $parent['ALG_NUM'];
+                $category       = get($item, ['ID_K_COMP_CATEG']);
+                $parentCategory = get($parent, ['ID_K_COMP_CATEG']);
+                $alg            = get($item, ['ALG_NOM'], 0);
+                // $parentAlg      = get($parent, ['ALG_NUM']);
+                $modif = false;
 
-                if ($category === $parentCategory) {
-                    /// 
+                if ($parentCategory == '') {
+                    console::log(' родительская категория отсутствует ', $parent);
+                }
+                if ($category != $parentCategory && $alg == ALG_INHERITED) {
+                    // если категории не совпадают, но требуется наследование, выставляем - "согласно категории"
+                    $modif           = true;
+                    $alg             = ALG_BY_CATEGORY;
+                    $item['ALG_NOM'] = ALG_BY_CATEGORY;
+
+                    // console::once('категории не совпали', $parent, $item);
                 }
 
-                return $item;
+                if ($category == $parentCategory) { // категории совпадают 
+
+                    if ($alg == ALG_INHERITED) {
+                        $modif           = true;
+                        $item['ALG_NOM'] = $parentCategory;
+
+                        foreach (self::$COMPONENT_UPDATE_FIELDS as $FIELD) {
+
+                            $current = get($item, [$FIELD], 0);
+                            $prev    = get($parent, [$FIELD], 0);
+
+                            if (empty($current) && ! empty($prev)) {
+                                $item[$FIELD] = $prev;
+                            }
+                        }
+
+                        foreach (self::$PROP_UPDATE_FIELDS as $FIELD) {
+
+                            $current = get($item, [$FIELD], 0);
+                            $prev    = get($parent, [$FIELD], 0);
+
+                            if (empty($current) && ! empty($prev)) {
+                                $item[$FIELD] = $prev;
+                            }
+                        }
+                    }
+                }
+                return ['modif' => $modif, 'item' => $item];
             });
             Base::commit('deco');
             console::timeEnd('KarnizTemplateHandler::run');
+            console::log('изменено: ' . self::$COUNT_MODIF . ' строк');
+
         } catch (\Exception $e) {
             Base::rollback('deco');
             console::timeEnd('KarnizTemplateHandler::run');
             throw $e;
-
         }
 
     }
@@ -58,6 +110,7 @@ class KarnizTemplateHandler
             $q          = "
             select
                     kco.ID_K_COMP_OWNER,
+                    c.ID_K_COMP_CATEG,
                     " . self::$STR_COMPONENT_UPDATE_FIELDS . ",
                     " . self::$STR_PROP_UPDATE_FIELDS . ",
                     c.ID_K_COMPONENT `ID_K_COMPONENT`
@@ -75,8 +128,11 @@ class KarnizTemplateHandler
             $ds2 = Base::ds($q, 'deco', 'utf8');
 
             while ($root = Base::read($ds2)) {
-                $root = $callback($root, []);
-                self::component_save($root);
+                // $info = $callback($root, []);
+                // if ($info['modif']) {
+                //     $root = $info['item'];
+                //     self::component_save($root);
+                // }
                 self::_map($callback, $root);
             }
         }
@@ -87,25 +143,29 @@ class KarnizTemplateHandler
         $ID_K_COMPONENT = $parent['ID_K_COMPONENT'];
         if ($ID_K_COMPONENT) {
             $q = "
-        select
-                kco.ID_K_COMP_OWNER,
-                    " . self::$STR_COMPONENT_UPDATE_FIELDS . ",
-                    " . self::$STR_PROP_UPDATE_FIELDS . ",
-                c.ID_K_COMPONENT `ID_K_COMPONENT`
-        from
-            K_COMPONENT c
-            left outer join K_COMP_OWNER kco on c.ID_K_COMPONENT = kco.ID_K_COMPONENT
-            left outer join K_COMP_PROP prop on c.ID_K_COMPONENT = prop.ID_K_COMPONENT
-        where
-            kco.ID_K_OWNER = $ID_K_COMPONENT
-        order by
-        c.ID_K_COMPONENT";
+                    select
+                            kco.ID_K_COMP_OWNER,
+                            c.ID_K_COMP_CATEG,
+                                " . self::$STR_COMPONENT_UPDATE_FIELDS . ",
+                                " . self::$STR_PROP_UPDATE_FIELDS . ",
+                            c.ID_K_COMPONENT `ID_K_COMPONENT`
+                    from
+                        K_COMPONENT c
+                        left outer join K_COMP_OWNER kco on c.ID_K_COMPONENT = kco.ID_K_COMPONENT
+                        left outer join K_COMP_PROP prop on c.ID_K_COMPONENT = prop.ID_K_COMPONENT
+                    where
+                        kco.ID_K_OWNER = $ID_K_COMPONENT
+                    order by
+                    c.ID_K_COMPONENT";
 
             $ds = Base::ds($q, 'deco', 'utf8');
 
             while ($component = Base::read($ds)) {
-                $component = $callback($component, $parent);
-                self::component_save($component);
+                $info = $callback($component, $parent);
+                if ($info['modif']) {
+                    $component = $info['item'];
+                    self::component_save($component);
+                }
                 self::_map($callback, $component);
             }
         } else {
@@ -121,8 +181,8 @@ class KarnizTemplateHandler
         }
 
         $q = 'update K_COMPONENT set ' . $data . ' where ID_K_COMPONENT=' . $component['ID_K_COMPONENT'];
-        // console::log($q);
-        // Base::query($q, 'deco', 'utf8');
+        //console::once($q);
+        Base::query($q, 'deco', 'utf8');
         //--------------------------------------------------------------------------------------------
         $data = '';
         foreach (self::$PROP_UPDATE_FIELDS as $field) {
@@ -130,8 +190,10 @@ class KarnizTemplateHandler
         }
 
         $q = 'update K_COMP_PROP set ' . $data . ' where ID_K_COMPONENT=' . $component['ID_K_COMPONENT'];
-        // console::log($q);
-        // Base::query($q, 'deco', 'utf8');
+        //console::once($q);
+        Base::query($q, 'deco', 'utf8');
+
+        self::$COUNT_MODIF++;
 
     }
 
@@ -139,6 +201,8 @@ class KarnizTemplateHandler
     {
         $exclude = [
             'ID_K_COMPONENT',
+            'CONTENT_KIND',
+            'ID_K_COMP_CATEG',
             'CAPTION', 'NAME_DESIGN', 'NOTE', 'GROUP_TITLE',
             'DOP_CALC', 'ID_K_TEMPL', 'IND_IN_TREE',
             'ID_K_MODEL_TOVAR_DETAIL', 'ALWAYS_SHOW_CAPTION',
