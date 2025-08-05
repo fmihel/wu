@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "fmihel/console-log",
-            "version": "v1.6.2",
+            "version": "v1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fmihel/console-log.git",
-                "reference": "6aa4aae83252c54346cfd69554a58d2128c78e4c"
+                "reference": "e47215229a20663a388362414141e2d7cca687bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fmihel/console-log/zipball/6aa4aae83252c54346cfd69554a58d2128c78e4c",
-                "reference": "6aa4aae83252c54346cfd69554a58d2128c78e4c",
+                "url": "https://api.github.com/repos/fmihel/console-log/zipball/e47215229a20663a388362414141e2d7cca687bd",
+                "reference": "e47215229a20663a388362414141e2d7cca687bd",
                 "shasum": ""
             },
             "require-dev": {
@@ -42,9 +42,9 @@
             "description": "error,log,console,php,javascript,js,error_log,console.log,console.info",
             "support": {
                 "issues": "https://github.com/fmihel/console-log/issues",
-                "source": "https://github.com/fmihel/console-log/tree/v1.6.2"
+                "source": "https://github.com/fmihel/console-log/tree/v1.8.0"
             },
-            "time": "2024-07-11T06:59:03+00:00"
+            "time": "2024-10-24T13:10:45+00:00"
         },
         {
             "name": "fmihel/php-base",
@@ -359,19 +359,20 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.31.0",
+            "version": "v1.32.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341"
+                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/85181ba99b2345b0ef10ce42ecac37612d9fd341",
-                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6d857f4d76bd4b343eac26d6b539585d2bc56493",
+                "reference": "6d857f4d76bd4b343eac26d6b539585d2bc56493",
                 "shasum": ""
             },
             "require": {
+                "ext-iconv": "*",
                 "php": ">=7.2"
             },
             "provide": {
@@ -383,8 +384,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
@@ -419,7 +420,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.31.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.32.0"
             },
             "funding": [
                 {
@@ -435,7 +436,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T11:45:10+00:00"
+            "time": "2024-12-23T08:48:59+00:00"
         }
     ],
     "packages-dev": [],
