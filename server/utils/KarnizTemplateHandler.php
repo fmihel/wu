@@ -26,18 +26,23 @@ class KarnizTemplateHandler
     private static $STR_COMPONENT_UPDATE_FIELDS = '';
     private static $STR_PROP_UPDATE_FIELDS      = '';
     private static $COUNT_MODIF                 = 0;
+    private static $COUNT_ALL                   = 0;
+
     public static function run()
     {
         Base::startTransaction('deco');
         try {
             console::line();
-            console::time('KarnizTemplateHandler::run', false);
+            console::time('KarnizTemplateHandler::run', true);
             self::$COUNT_MODIF             = 0;
+            self::$COUNT_ALL               = 0;
             self::$PROP_UPDATE_FIELDS      = self::init_update_prop_fields();
             self::$COMPONENT_UPDATE_FIELDS = self::init_update_component_fields();
 
             self::$STR_PROP_UPDATE_FIELDS = implode(',', array_map(function ($item) {return 'prop.' . $item;}, self::$PROP_UPDATE_FIELDS));
             self::$STR_COMPONENT_UPDATE_FIELDS = implode(',', array_map(function ($item) {return 'c.' . $item;}, self::$COMPONENT_UPDATE_FIELDS));
+
+            self::recover_comp_prop();
 
             self::map(function ($item, $parent) {
 
@@ -62,8 +67,11 @@ class KarnizTemplateHandler
                 if ($category == $parentCategory) { // категории совпадают 
 
                     if ($alg == ALG_INHERITED) {
-                        $modif           = true;
-                        $item['ALG_NOM'] = $parentCategory;
+
+                        if ($item['ALG_NOM'] != $parentCategory) {
+                            $modif           = true;
+                            $item['ALG_NOM'] = $parentCategory;
+                        }
 
                         foreach (self::$COMPONENT_UPDATE_FIELDS as $FIELD) {
 
@@ -71,6 +79,7 @@ class KarnizTemplateHandler
                             $prev    = get($parent, [$FIELD], 0);
 
                             if (empty($current) && ! empty($prev)) {
+                                $modif        = true;
                                 $item[$FIELD] = $prev;
                             }
                         }
@@ -89,8 +98,9 @@ class KarnizTemplateHandler
                 return ['modif' => $modif, 'item' => $item];
             });
             Base::commit('deco');
+
+            console::log('изменено: ' . self::$COUNT_MODIF . '/' . self::$COUNT_ALL . ' строк');
             console::timeEnd('KarnizTemplateHandler::run');
-            console::log('изменено: ' . self::$COUNT_MODIF . ' строк');
 
         } catch (\Exception $e) {
             Base::rollback('deco');
@@ -134,7 +144,9 @@ class KarnizTemplateHandler
                 //     self::component_save($root);
                 // }
                 self::_map($callback, $root);
+                self::$COUNT_ALL++;
             }
+
         }
     }
 
@@ -161,12 +173,15 @@ class KarnizTemplateHandler
             $ds = Base::ds($q, 'deco', 'utf8');
 
             while ($component = Base::read($ds)) {
+
                 $info = $callback($component, $parent);
                 if ($info['modif']) {
                     $component = $info['item'];
                     self::component_save($component);
                 }
                 self::_map($callback, $component);
+
+                self::$COUNT_ALL++;
             }
         } else {
             console::log('empty ID_K_COMPONENT', $parent);
@@ -178,6 +193,7 @@ class KarnizTemplateHandler
         $data = '';
         foreach (self::$COMPONENT_UPDATE_FIELDS as $field) {
             $data .= ($data ? ',' : ' ') . $field . '="' . $component[$field] . '"';
+
         }
 
         $q = 'update K_COMPONENT set ' . $data . ' where ID_K_COMPONENT=' . $component['ID_K_COMPONENT'];
@@ -190,7 +206,7 @@ class KarnizTemplateHandler
         }
 
         $q = 'update K_COMP_PROP set ' . $data . ' where ID_K_COMPONENT=' . $component['ID_K_COMPONENT'];
-        //console::once($q);
+        // console::once($q);
         Base::query($q, 'deco', 'utf8');
 
         self::$COUNT_MODIF++;
@@ -241,6 +257,31 @@ class KarnizTemplateHandler
             }
         }
         return $out;
+    }
+
+    /** добавляем недостающие записи в таблицу comp_prop */
+    private static function recover_comp_prop()
+    {
+
+        try {
+
+            $q  = 'select distinct c.ID_K_COMPONENT from K_COMPONENT c left outer join K_COMP_PROP cp on c.ID_K_COMPONENT = cp.ID_K_COMPONENT where cp.ID_K_COMPONENT is null';
+            $ds = Base::ds($q, 'deco');
+
+            Base::startTransaction('deco');
+            $count = 0;
+            while ($row = Base::read($ds)) {
+                $q = 'insert into K_COMP_PROP  (ID_K_COMPONENT) values (' . $row['ID_K_COMPONENT'] . ')';
+                Base::query($q, 'deco');
+                $count++;
+            }
+            Base::commit('deco');
+
+            console::log("добавлено $count записей в K_COMP_PROP");
+        } catch (\Exception $e) {
+            Base::rollback('deco');
+            throw $e;
+        }
     }
 
 }
