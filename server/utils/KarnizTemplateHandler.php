@@ -46,51 +46,60 @@ class KarnizTemplateHandler
 
             self::map(function ($item, $parent) {
 
-                $category       = get($item, ['ID_K_COMP_CATEG']);
-                $parentCategory = get($parent, ['ID_K_COMP_CATEG']);
-                $alg            = get($item, ['ALG_NOM'], 0);
-                // $parentAlg      = get($parent, ['ALG_NUM']);
                 $modif = false;
+                if (empty($parent)) { // для корневого компонента
+                    $alg = get($item, ['ALG_NOM'], 0);
+                    if ($alg == 0) {
+                        $modif           = true;
+                        $alg             = ALG_BY_CATEGORY;
+                        $item['ALG_NOM'] = ALG_BY_CATEGORY;
+                    }
+                } else { // для компонентов наследников
+                    $category       = get($item, ['ID_K_COMP_CATEG']);
+                    $parentCategory = get($parent, ['ID_K_COMP_CATEG']);
+                    $alg            = get($item, ['ALG_NOM'], 0);
+                    // $parentAlg      = get($parent, ['ALG_NUM']);
 
-                if ($parentCategory == '') {
-                    console::log(' родительская категория отсутствует ', $parent);
-                }
-                if ($category != $parentCategory && $alg == ALG_INHERITED) {
-                    // если категории не совпадают, но требуется наследование, выставляем - "согласно категории"
-                    $modif           = true;
-                    $alg             = ALG_BY_CATEGORY;
-                    $item['ALG_NOM'] = ALG_BY_CATEGORY;
+                    if ($parentCategory == '') {
+                        console::log(' родительская категория отсутствует ', $parent);
+                    }
+                    if ($category != $parentCategory && $alg == ALG_INHERITED) {
+                        // если категории не совпадают, но требуется наследование, выставляем - "согласно категории"
+                        $modif           = true;
+                        $alg             = ALG_BY_CATEGORY;
+                        $item['ALG_NOM'] = ALG_BY_CATEGORY;
 
-                    // console::once('категории не совпали', $parent, $item);
-                }
+                        // console::once('категории не совпали', $parent, $item);
+                    }
 
-                if ($category == $parentCategory) { // категории совпадают 
+                    if ($category == $parentCategory) { // категории совпадают 
 
-                    if ($alg == ALG_INHERITED) {
+                        if ($alg == ALG_INHERITED) {
 
-                        if ($item['ALG_NOM'] != $parentCategory) {
-                            $modif           = true;
-                            $item['ALG_NOM'] = $parentCategory;
-                        }
-
-                        foreach (self::$COMPONENT_UPDATE_FIELDS as $FIELD) {
-
-                            $current = get($item, [$FIELD], 0);
-                            $prev    = get($parent, [$FIELD], 0);
-
-                            if (empty($current) && ! empty($prev)) {
-                                $modif        = true;
-                                $item[$FIELD] = $prev;
+                            if ($item['ALG_NOM'] != $parentCategory) {
+                                $modif           = true;
+                                $item['ALG_NOM'] = $parentCategory;
                             }
-                        }
 
-                        foreach (self::$PROP_UPDATE_FIELDS as $FIELD) {
+                            foreach (self::$COMPONENT_UPDATE_FIELDS as $FIELD) {
 
-                            $current = get($item, [$FIELD], 0);
-                            $prev    = get($parent, [$FIELD], 0);
+                                $current = get($item, [$FIELD], 0);
+                                $prev    = get($parent, [$FIELD], 0);
 
-                            if (empty($current) && ! empty($prev)) {
-                                $item[$FIELD] = $prev;
+                                if (empty($current) && ! empty($prev)) {
+                                    $modif        = true;
+                                    $item[$FIELD] = $prev;
+                                }
+                            }
+
+                            foreach (self::$PROP_UPDATE_FIELDS as $FIELD) {
+
+                                $current = get($item, [$FIELD], 0);
+                                $prev    = get($parent, [$FIELD], 0);
+
+                                if (empty($current) && ! empty($prev)) {
+                                    $item[$FIELD] = $prev;
+                                }
                             }
                         }
                     }
@@ -138,11 +147,11 @@ class KarnizTemplateHandler
             $ds2 = Base::ds($q, 'deco', 'utf8');
 
             while ($root = Base::read($ds2)) {
-                // $info = $callback($root, []);
-                // if ($info['modif']) {
-                //     $root = $info['item'];
-                //     self::component_save($root);
-                // }
+                $info = $callback($root, []);
+                if ($info['modif']) {
+                    $root = $info['item'];
+                    self::component_save($root);
+                }
                 self::_map($callback, $root);
                 self::$COUNT_ALL++;
             }
