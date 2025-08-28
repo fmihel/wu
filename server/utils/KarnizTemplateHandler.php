@@ -69,16 +69,14 @@ class KarnizTemplateHandler
                         $alg             = ALG_BY_CATEGORY;
                         $item['ALG_NOM'] = ALG_BY_CATEGORY;
 
-                        // console::once('категории не совпали', $parent, $item);
-                    }
-
-                    if ($category == $parentCategory) { // категории совпадают 
+                                                                   // console::once('категории не совпали', $parent, $item);
+                    } else if ($category == $parentCategory) { // категории совпадают 
 
                         if ($alg == ALG_INHERITED) {
 
-                            if ($item['ALG_NOM'] != $parentCategory) {
+                            if ($item['ALG_NOM'] != $parent['ALG_NOM']) {
                                 $modif           = true;
-                                $item['ALG_NOM'] = $parentCategory;
+                                $item['ALG_NOM'] = $parent['ALG_NOM'];
                             }
 
                             foreach (self::$COMPONENT_UPDATE_FIELDS as $FIELD) {
