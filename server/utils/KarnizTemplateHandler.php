@@ -18,6 +18,9 @@ const ALG_OTLET              = 4; // Подбор товаров по отлет
 const ALG_FIX                = 5; // Фиксир.
 const ALG_MANUAL             = 6; // Ручной ввод
 
+const CATEGORY_LINE = 1;
+const CATEGORY_TUBE = 3;
+
 class KarnizTemplateHandler
 {
 
@@ -47,6 +50,7 @@ class KarnizTemplateHandler
             self::map(function ($item, $parent) {
 
                 $modif = false;
+
                 if (empty($parent)) { // для корневого компонента
                     $alg = get($item, ['ALG_NOM'], 0);
                     if ($alg == 0) {
@@ -69,7 +73,8 @@ class KarnizTemplateHandler
                         $alg             = ALG_BY_CATEGORY;
                         $item['ALG_NOM'] = ALG_BY_CATEGORY;
 
-                                                                   // console::once('категории не совпали', $parent, $item);
+                        // console::once('категории не совпали', $parent, $item);
+
                     } else if ($category == $parentCategory) { // категории совпадают 
 
                         if ($alg == ALG_INHERITED) {
@@ -96,11 +101,28 @@ class KarnizTemplateHandler
                                 $prev    = get($parent, [$FIELD], 0);
 
                                 if (empty($current) && ! empty($prev)) {
+                                    $modif        = true;
                                     $item[$FIELD] = $prev;
                                 }
                             }
                         }
                     }
+                    //-----------------------------------------------------------------------
+                    if ($category == CATEGORY_TUBE && $parentCategory == CATEGORY_LINE) {
+
+                        foreach (self::$PROP_UPDATE_FIELDS as $FIELD) {
+
+                            $current = get($item, [$FIELD], 0);
+                            $prev    = get($parent, [$FIELD], 0);
+
+                            if (empty($current) && ! empty($prev)) {
+                                $modif        = true;
+                                $item[$FIELD] = $prev;
+                            }
+                        }
+
+                    }
+                    //-----------------------------------------------------------------------
                 }
                 return ['modif' => $modif, 'item' => $item];
             });
@@ -200,7 +222,6 @@ class KarnizTemplateHandler
         $data = '';
         foreach (self::$COMPONENT_UPDATE_FIELDS as $field) {
             $data .= ($data ? ',' : ' ') . $field . '="' . $component[$field] . '"';
-
         }
 
         $q = 'update K_COMPONENT set ' . $data . ' where ID_K_COMPONENT=' . $component['ID_K_COMPONENT'];
